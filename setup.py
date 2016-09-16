@@ -63,7 +63,7 @@ setup(
     package_dir={"": "src"},
 
     install_requires=[
-        "troposphere==1.1.2",
+        "troposphere==1.8.1",
         "jmespath==0.7.1",
         "boto==2.38.0",
         "botocore==1.1.1",
