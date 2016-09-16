@@ -71,7 +71,7 @@ setup(
         "ipcalc==1.1.2",
         "docopt==0.6.2",
         "setuptools==17.1",
-        "awacs==0.5.3",
+        "awacs==0.6.0",
         "commentjson==0.6",
         "PyYAML==3.11",
         "netaddr==0.7.18",
