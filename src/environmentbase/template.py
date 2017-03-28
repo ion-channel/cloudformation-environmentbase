@@ -646,6 +646,7 @@ class Template(t.Template):
 
                 ebs_block_device = ec2.EBSBlockDevice(
                     DeleteOnTermination=ebs_volume.get('delete_on_termination', True),
+                    Encrypted=ebs_volume.get('encrypted', False),
                     VolumeSize=ebs_volume.get('size', '100'),
                     VolumeType=ebs_volume.get('type', 'gp2'))
 
