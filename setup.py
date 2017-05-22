@@ -6,7 +6,7 @@ from setuptools import find_packages
 from setuptools import setup
 from multiprocessing import util
 
-execfile('src/environmentbase/version.py')
+exec(open('src/environmentbase/version.py').read())
 
 
 def read(*names, **kwargs):
