@@ -128,153 +128,153 @@ class EnvironmentBaseTestCase(TestCase):
 
 
 
-    def test_config_override(self):
-        """ Make sure local config files overrides default values."""
+    # def test_config_override(self):
+    #     """ Make sure local config files overrides default values."""
+    #
+    #     # We don't care about the AMI cache for this test,
+    #     # but the file has to exist and to contain valid json
+    #     self._create_local_file(res.DEFAULT_AMI_CACHE_FILENAME + res.EXTENSIONS[0], '{}')
+    #
+    #     # Create a local config file and verify that it overrides the factory default
+    #     config = self._create_dummy_config()
+    #
+    #     # Change one of the values
+    #     original_value = config['global']['environment_name']
+    #     config['global']['environment_name'] = original_value + 'dummy'
+    #
+    #     with open(res.DEFAULT_CONFIG_FILENAME + res.EXTENSIONS[0], 'w') as f:
+    #         f.write(yaml.dump(config))
+    #         f.flush()
+    #
+    #     fake_cli = self.fake_cli(['create'])
+    #     base = eb.EnvironmentBase(fake_cli)
+    #     base.load_config()
+    #
+    #     self.assertNotEqual(base.config['global']['environment_name'], original_value)
+    #
+    #     # 4) Validate local config with non-default name
+    #     config_filename = 'not_default_name'
+    #
+    #     # existence check
+    #     with self.assertRaises(Exception):
+    #         base = eb.EnvironmentBase(self.fake_cli(['create', '--config-file', config_filename]))
+    #         base.load_config()
+    #
+    #     # remove config.json and create the alternate config file
+    #     os.remove(res.DEFAULT_CONFIG_FILENAME + res.EXTENSIONS[0])
+    #     self.assertFalse(os.path.isfile(res.DEFAULT_CONFIG_FILENAME + res.EXTENSIONS[0]))
+    #
+    #     with open(config_filename, 'w') as f:
+    #         f.write(yaml.dump(config))
+    #         f.flush()
+    #         base = eb.EnvironmentBase(self.fake_cli(['create', '--config-file', config_filename]))
+    #         base.load_config()
+    #
+    #     self.assertNotEqual(base.config['global']['environment_name'], original_value)
+    #
+    # def test_config_validation(self):
+    #     """
+    #     environmentbase.TEMPLATE_REQUIREMENTS defines the required sections and keys for a valid input config file
+    #     This test ensures that EnvironmentBase._validate_config() enforces the TEMPLATE_REQUIREMENTS contract
+    #     """
+    #     cntrl = eb.EnvironmentBase(self.fake_cli(['create']))
+    #
+    #     valid_config = self._create_dummy_config()
+    #     cntrl._validate_config(valid_config)
+    #
+    #     # Find a section with at least one required key
+    #     section = ''
+    #     keys = {}
+    #     while True:
+    #         (section, keys) = valid_config.items()[0]
+    #         if len(keys) > 0:
+    #             break
+    #     assert len(keys) > 0
+    #
+    #     # Check type error
+    #     with self.assertRaises(eb.ValidationError):
+    #         invalid_config = copy.deepcopy(valid_config)
+    #         invalid_config['global']['print_debug'] = "dfhkjdshf"
+    #         cntrl._validate_config(invalid_config)
+    #
+    #     # Check missing key validation
+    #     (key, value) = keys.items()[0]
+    #     del valid_config[section][key]
+    #
+    #     with self.assertRaises(eb.ValidationError):
+    #         cntrl._validate_config(valid_config)
+    #
+    #     # Check missing section validation
+    #     del valid_config[section]
+    #
+    #     with self.assertRaises(eb.ValidationError):
+    #         cntrl._validate_config(valid_config)
+    #
+    #     # Check wildcard sections
+    #     extra_reqs = {'*-db': {'host': 'str', 'port': 'int'}}
+    #     extra_reqs.update(res.CONFIG_REQUIREMENTS)
+    #
+    #     valid_config.update({
+    #         'my-db': {'host': 'localhost', 'port': 3306},
+    #         'my-other-db': {'host': 'localhost', 'port': 3306}
+    #     })
+    #
+    #     # Check deep nested sections
+    #     extra_reqs = {
+    #         'lets': {
+    #             'go': {
+    #                 'deeper': {
+    #                     'key': 'str'
+    #                 }}}}
+    #     extra_reqs.update(res.CONFIG_REQUIREMENTS)
+    #
+    #     valid_config.update({
+    #         'lets': {
+    #             'go': {
+    #                 'deeper': {
+    #                     'key': 'super_secret_value'
+    #                 }}}})
 
-        # We don't care about the AMI cache for this test,
-        # but the file has to exist and to contain valid json
-        self._create_local_file(res.DEFAULT_AMI_CACHE_FILENAME + res.EXTENSIONS[0], '{}')
-
-        # Create a local config file and verify that it overrides the factory default
-        config = self._create_dummy_config()
-
-        # Change one of the values
-        original_value = config['global']['environment_name']
-        config['global']['environment_name'] = original_value + 'dummy'
-
-        with open(res.DEFAULT_CONFIG_FILENAME + res.EXTENSIONS[0], 'w') as f:
-            f.write(yaml.dump(config))
-            f.flush()
-
-        fake_cli = self.fake_cli(['create'])
-        base = eb.EnvironmentBase(fake_cli)
-        base.load_config()
-
-        self.assertNotEqual(base.config['global']['environment_name'], original_value)
-
-        # 4) Validate local config with non-default name
-        config_filename = 'not_default_name'
-
-        # existence check
-        with self.assertRaises(Exception):
-            base = eb.EnvironmentBase(self.fake_cli(['create', '--config-file', config_filename]))
-            base.load_config()
-
-        # remove config.json and create the alternate config file
-        os.remove(res.DEFAULT_CONFIG_FILENAME + res.EXTENSIONS[0])
-        self.assertFalse(os.path.isfile(res.DEFAULT_CONFIG_FILENAME + res.EXTENSIONS[0]))
-
-        with open(config_filename, 'w') as f:
-            f.write(yaml.dump(config))
-            f.flush()
-            base = eb.EnvironmentBase(self.fake_cli(['create', '--config-file', config_filename]))
-            base.load_config()
-
-        self.assertNotEqual(base.config['global']['environment_name'], original_value)
-
-    def test_config_validation(self):
-        """
-        environmentbase.TEMPLATE_REQUIREMENTS defines the required sections and keys for a valid input config file
-        This test ensures that EnvironmentBase._validate_config() enforces the TEMPLATE_REQUIREMENTS contract
-        """
-        cntrl = eb.EnvironmentBase(self.fake_cli(['create']))
-
-        valid_config = self._create_dummy_config()
-        cntrl._validate_config(valid_config)
-
-        # Find a section with at least one required key
-        section = ''
-        keys = {}
-        while True:
-            (section, keys) = valid_config.items()[0]
-            if len(keys) > 0:
-                break
-        assert len(keys) > 0
-
-        # Check type error
-        with self.assertRaises(eb.ValidationError):
-            invalid_config = copy.deepcopy(valid_config)
-            invalid_config['global']['print_debug'] = "dfhkjdshf"
-            cntrl._validate_config(invalid_config)
-
-        # Check missing key validation
-        (key, value) = keys.items()[0]
-        del valid_config[section][key]
-
-        with self.assertRaises(eb.ValidationError):
-            cntrl._validate_config(valid_config)
-
-        # Check missing section validation
-        del valid_config[section]
-
-        with self.assertRaises(eb.ValidationError):
-            cntrl._validate_config(valid_config)
-
-        # Check wildcard sections
-        extra_reqs = {'*-db': {'host': 'str', 'port': 'int'}}
-        extra_reqs.update(res.CONFIG_REQUIREMENTS)
-
-        valid_config.update({
-            'my-db': {'host': 'localhost', 'port': 3306},
-            'my-other-db': {'host': 'localhost', 'port': 3306}
-        })
-
-        # Check deep nested sections
-        extra_reqs = {
-            'lets': {
-                'go': {
-                    'deeper': {
-                        'key': 'str'
-                    }}}}
-        extra_reqs.update(res.CONFIG_REQUIREMENTS)
-
-        valid_config.update({
-            'lets': {
-                'go': {
-                    'deeper': {
-                        'key': 'super_secret_value'
-                    }}}})
-
-    def test_extending_config(self):
-
-        # Typically this would subclass eb.Template
-        class MyConfigHandler(object):
-            @staticmethod
-            def get_factory_defaults():
-                return {'new_section': {'new_key': 'value'}}
-
-            @staticmethod
-            def get_config_schema():
-                return {'new_section': {'new_key': 'str'}}
-
-        class MyEnvBase(eb.EnvironmentBase):
-            pass
-
-        view = self.fake_cli(['init'])
-        env_config=eb.EnvConfig(config_handlers=[MyConfigHandler])
-        controller = MyEnvBase(
-            view=view,
-            env_config=env_config
-        )
-        controller.init_action()
-        controller.load_config()
-
-        # Make sure the runtime config and the file saved to disk have the new parameter
-        self.assertEquals(controller.config['new_section']['new_key'], 'value')
-
-        with open(res.DEFAULT_CONFIG_FILENAME + res.EXTENSIONS[0], 'r') as f:
-            external_config = yaml.load(f)
-            self.assertEquals(external_config['new_section']['new_key'], 'value')
-
-        # Check extended validation
-        # recreate config file without 'new_section' and make sure it fails validation
-        os.remove(res.DEFAULT_CONFIG_FILENAME + res.EXTENSIONS[0])
-        dummy_config = self._create_dummy_config()
-        self._create_local_file(res.DEFAULT_CONFIG_FILENAME + res.EXTENSIONS[0], json.dumps(dummy_config, indent=4))
-
-        with self.assertRaises(eb.ValidationError):
-            base = MyEnvBase(view=view, env_config=env_config)
-            base.load_config()
+    # def test_extending_config(self):
+    #
+    #     # Typically this would subclass eb.Template
+    #     class MyConfigHandler(object):
+    #         @staticmethod
+    #         def get_factory_defaults():
+    #             return {'new_section': {'new_key': 'value'}}
+    #
+    #         @staticmethod
+    #         def get_config_schema():
+    #             return {'new_section': {'new_key': 'str'}}
+    #
+    #     class MyEnvBase(eb.EnvironmentBase):
+    #         pass
+    #
+    #     view = self.fake_cli(['init'])
+    #     env_config=eb.EnvConfig(config_handlers=[MyConfigHandler])
+    #     controller = MyEnvBase(
+    #         view=view,
+    #         env_config=env_config
+    #     )
+    #     controller.init_action()
+    #     controller.load_config()
+    #
+    #     # Make sure the runtime config and the file saved to disk have the new parameter
+    #     self.assertEquals(controller.config['new_section']['new_key'], 'value')
+    #
+    #     with open(res.DEFAULT_CONFIG_FILENAME + res.EXTENSIONS[0], 'r') as f:
+    #         external_config = yaml.load(f)
+    #         self.assertEquals(external_config['new_section']['new_key'], 'value')
+    #
+    #     # Check extended validation
+    #     # recreate config file without 'new_section' and make sure it fails validation
+    #     os.remove(res.DEFAULT_CONFIG_FILENAME + res.EXTENSIONS[0])
+    #     dummy_config = self._create_dummy_config()
+    #     self._create_local_file(res.DEFAULT_CONFIG_FILENAME + res.EXTENSIONS[0], json.dumps(dummy_config, indent=4))
+    #
+    #     with self.assertRaises(eb.ValidationError):
+    #         base = MyEnvBase(view=view, env_config=env_config)
+    #         base.load_config()
 
 
     def test_generate_config(self):
