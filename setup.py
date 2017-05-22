@@ -22,12 +22,12 @@ setup(
     version=__version__,
 
     description="Base environment for Troposphere based CFN project environments",
-    long_description="%s" % read("README.md"),
+    long_description="%s" % read("README.rst"),
 
-    url='https://github.com/DualSpark/cloudformation-environmentbase',
+    url='https://github.com/ion-channel/cloudformation-environmentbase',
 
-    author="Patrick McClory",
-    author_email="patrick@dualspark.com",
+    author="Patrick McClory, Patrick Pierson",
+    author_email="patrick@dualspark.com, patrick.pierson@ionchannel.io",
 
     license="ISC",
 
@@ -35,7 +35,6 @@ setup(
         # complete classifier list: http://pypi.python.org/pypi?%3Aaction=list_classifiers
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
-        "License :: OSI Approved :: ISC License",
         "Operating System :: Unix",
         "Operating System :: POSIX",
         "Operating System :: Microsoft :: Windows",
