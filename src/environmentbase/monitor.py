@@ -120,15 +120,13 @@ class StackMonitor(object):
                     try:
                         data['props'] = json.loads(data['props'])
                     except (ValueError, TypeError):
-                        print "\nFailed to parse properties for event:\n{}\n".format(data['props'])
-                        print "\nRaw Message Body:\n{}\n".format(msg_body)
-                        print "\nParsed Message:\n{}\n".format(parsed_msg)
+                        print("\nFailed to parse properties for event:\n{}\n".format(data['props']))
+                        print("\nRaw Message Body:\n{}\n".format(msg_body))
+                        print("\nParsed Message:\n{}\n".format(parsed_msg))
                         pass
 
                 if debug:
-                    print "New Stack Event --------------\n", \
-                        data['status'], data['type'], data['name'], '\n', \
-                        data['reason'], '\n'
+                    print("New Stack Event ------------\n %s %s %s \n %s \n" % (data['status'], data['type'], data['name'], data['reason']))
                 else:
                     pass
 
