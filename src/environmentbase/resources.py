@@ -1,5 +1,7 @@
-from pkg_resources import resource_string, resource_exists
-import yaml, json
+from pkg_resources import resource_string
+from pkg_resources import resource_exists
+import yaml
+import json
 import os
 
 
@@ -48,6 +50,7 @@ def get_resource(resource_name, relative_to_module_name=__name__):
     file_content = resource_string(relative_to_module_name, file_path)
     return file_content
 
+
 EXTENSIONS = ['.json', '.yaml', '.yml']
 
 DEFAULT_CONFIG_FILENAME = 'config'
@@ -75,6 +78,7 @@ def load_file(parent, basename):
 
     return load_yaml_file(file_path)
 
+
 def load_yaml_file(file_path):
 
     if not os.path.isfile(file_path):
@@ -87,10 +91,11 @@ def load_yaml_file(file_path):
             content = f.read()
             parsed_content = yaml.load(content)
         except ValueError:
-            print '%s could not be parsed' % file_path
+            print('%s could not be parsed' % file_path)
             raise
 
     return parsed_content
+
 
 def load_json_file(file_path):
 
@@ -104,7 +109,7 @@ def load_json_file(file_path):
             content = f.read()
             parsed_content = json.loads(content)
         except ValueError:
-            print '%s could not be parsed' % file_path
+            print('%s could not be parsed' % file_path)
             raise
 
     return parsed_content
