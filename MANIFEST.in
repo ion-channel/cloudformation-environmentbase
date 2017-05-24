@@ -9,8 +9,6 @@ include DEVELOPMENT.md
 include FILE_DESCRIPTIONS.md
 include get_parameters.py
 
-
-
 include tox.ini appveyor.yml
 
 global-exclude *.py[co]

@@ -1,21 +1,16 @@
 import os
 import os.path
 import copy
-import re
-import sys
 import botocore.exceptions
 from boto import cloudformation, sts
-from troposphere import Parameter, Output
+from troposphere import Parameter
 from template import Template
 import cli
 import resources as res
 from fnmatch import fnmatch
 import utility
 import monitor
-import yaml
-import logging
 import json
-import tempfile
 
 TIMEOUT = 60
 
@@ -34,7 +29,8 @@ class EnvConfig(object):
 
 class EnvironmentBase(object):
     """
-    EnvironmentBase encapsulates functionality required to build and deploy a network and common resources for object storage within a specified region
+    EnvironmentBase encapsulates functionality required to build and deploy a network and common resources for object storage within a
+     specified region
     """
 
     def __init__(self,
@@ -47,8 +43,10 @@ class EnvironmentBase(object):
         template including a network, s3 bucket and requisite policies to allow ELB Access log aggregation and
         CloudTrail log storage.
         :param view: View object to use.
-        :param create_missing_files: Specifies policy to use when local files are missing.  When disabled missing files will cause an IOException
-        :param config_filename: The name of the config file to load by default.  Note: User can still override this value from the CLI with '--config-file'.
+        :param create_missing_files: Specifies policy to use when local files are missing.  When disabled missing files will cause an
+        IOException
+        :param config_filename: The name of the config file to load by default.  Note: User can still override this value from the CLI with
+         '--config-file'.
         :param config: Override loading config values from file by providing config setting directly to the constructor
         """
 
@@ -94,8 +92,8 @@ class EnvironmentBase(object):
 
     def add_config_hook(self):
         """
-        Override in your subclass for adding custom config handlers.  
-        Called after the other config handlers have been added.  
+        Override in your subclass for adding custom config handlers.
+        Called after the other config handlers have been added.
         After the hook completes the view is loaded and started.
         """
         pass
@@ -194,17 +192,16 @@ class EnvironmentBase(object):
             reloaded_template = json.loads(raw_json)
             output_file.write(json.dumps(reloaded_template, indent=4, separators=(',', ':')))
 
-        print "Generated {} template".format(template.name)
+        print("Generated {} template".format(template.name))
 
         if s3_upload:
-            print "S3:\t{}".format(utility.get_template_s3_url(Template.template_bucket_default, template.resource_path))
+            print("S3:\t{}".format(utility.get_template_s3_url(Template.template_bucket_default, template.resource_path)))
 
-        print "Local:\t{}\n".format(template.resource_path)
-
+        print("Local:\t{}\n".format(template.resource_path))
 
     def serialize_templates(self):
         s3_client = utility.get_boto_resource(self.config, 's3')
-        local_file_path = self._ensure_template_dir_exists()
+        self._ensure_template_dir_exists()
 
         s3_upload = self.config.get('template').get('s3_upload', True)
 
@@ -229,7 +226,6 @@ class EnvironmentBase(object):
         #         Parameters=stack_params)
 
         return estimate_cost_url.get('Url')
-
 
     def _root_template_path(self):
         """
@@ -286,7 +282,7 @@ class EnvironmentBase(object):
                 NotificationARNs=notification_arns,
                 Capabilities=['CAPABILITY_IAM'])
             is_successful = True
-            print "\nSuccessfully issued update stack command for %s\n" % stack_name
+            print("\nSuccessfully issued update stack command for %s\n" % stack_name)
 
         # Else stack doesn't currently exist, create a new stack
         except botocore.exceptions.ClientError as update_e:
@@ -301,9 +297,9 @@ class EnvironmentBase(object):
                         DisableRollback=True,
                         TimeoutInMinutes=TIMEOUT)
                     is_successful = True
-                    print "\nSuccessfully issued create stack command for %s\n" % stack_name
+                    print("\nSuccessfully issued create stack command for %s\n" % stack_name)
                 except botocore.exceptions.ClientError as create_e:
-                    print "Deploy failed: \n\n%s\n" % create_e.message
+                    print("Deploy failed: \n\n%s\n" % create_e.message)
             else:
                 raise
 
@@ -357,7 +353,7 @@ class EnvironmentBase(object):
 
         except KeyboardInterrupt:
             if self.stack_monitor:
-                print 'KeyboardInterrupt: calling cleanup'
+                print('KeyboardInterrupt: calling cleanup')
                 self.stack_monitor.cleanup_stack_monitor(topic, queue)
             raise
 
@@ -378,7 +374,7 @@ class EnvironmentBase(object):
         stack_name = self.config['global']['environment_name']
 
         cfn_conn.delete_stack(StackName=stack_name)
-        print "\nSuccessfully issued delete stack command for %s\n" % stack_name
+        print("\nSuccessfully issued delete stack command for %s\n" % stack_name)
 
     def _validate_config_helper(self, schema, config, path):
         # Check each requirement
@@ -407,7 +403,7 @@ class EnvironmentBase(object):
                                   (new_path, req_value, type(config[matching_key]).__name__)
                         raise ValidationError(message)
                     # else:
-                    #     print "%s validated: %s == %s" % (new_path, req_value, type(config[matching_key]).__name__)
+                    #     print("%s validated: %s == %s" % (new_path, req_value, type(config[matching_key]).__name__))
 
                 # if the schema is nested another level .. we must go deeper
                 elif isinstance(req_value, dict):
@@ -458,10 +454,10 @@ class EnvironmentBase(object):
         """
 
         if not hasattr(handler, 'get_factory_defaults') or not callable(getattr(handler, 'get_factory_defaults')):
-            raise ValidationError('Class %s cannot be a config handler, missing get_factory_defaults()' % type(handler).__name__ )
+            raise ValidationError('Class %s cannot be a config handler, missing get_factory_defaults()' % type(handler).__name__)
 
         if not hasattr(handler, 'get_config_schema') or not callable(getattr(handler, 'get_config_schema')):
-            raise ValidationError('Class %s cannot be a config handler, missing get_config_schema()' % type(handler).__name__ )
+            raise ValidationError('Class %s cannot be a config handler, missing get_config_schema()' % type(handler).__name__)
 
         self._config_handlers.append(handler)
 
@@ -501,7 +497,7 @@ class EnvironmentBase(object):
             if not isinstance(val, dict):
                 env_value = os.environ.get(env_name)
                 if print_debug:
-                    print "Checking %s (%s)" % (env_name, new_path)
+                    print("Checking %s (%s)" % (env_name, new_path))
 
                 if env_value is None:
                     continue
@@ -518,7 +514,7 @@ class EnvironmentBase(object):
                 config[key] = env_value if env_value is not None else default_value
 
                 if env_value is not None:
-                    print "* Updating %s from '%s' to value of '%s'" % (new_path, default_value, env_name)
+                    print("* Updating %s from '%s' to value of '%s'" % (new_path, default_value, env_name))
 
             else:
                 EnvironmentBase._config_env_override(config[key], new_path, print_debug=print_debug)
@@ -531,7 +527,7 @@ class EnvironmentBase(object):
         """
 
         if os.path.isfile(self.config_filename):
-            overwrite = raw_input("%s already exists. Overwrite? (y/n) " % self.config_filename).lower()
+            overwrite = input("%s already exists. Overwrite? (y/n) " % self.config_filename).lower()
             print
             if not overwrite == 'y':
                 return
@@ -544,7 +540,7 @@ class EnvironmentBase(object):
 
         with open(self.config_filename, 'w') as f:
             f.write(json.dumps(config, indent=4, sort_keys=True, separators=(',', ': ')))
-            print 'Generated config file at %s\n' % self.config_filename
+            print('Generated config file at %s\n' % self.config_filename)
 
     def load_config(self, view=None, config=None):
         """
@@ -586,12 +582,11 @@ class EnvironmentBase(object):
             self.stack_monitor = monitor.StackMonitor(self.globals['environment_name'])
             self.stack_monitor.add_handler(self)
 
-
     def initialize_template(self):
         """
         Create new Template instance, set description and common parameters and load AMI cache.
         """
-        print '\nGenerating templates for {} stack\n'.format(self.globals['environment_name'])
+        print('\nGenerating templates for {} stack\n'.format(self.globals['environment_name']))
 
         # Configure Template class with S3 settings from config
         Template.template_bucket_default = self.template_args.get('s3_bucket')
@@ -609,16 +604,18 @@ class EnvironmentBase(object):
         self.template.resource_path = self._root_template_path()
 
         ec2_key = self.config.get('template').get('ec2_key_default', 'default-key')
-        self.template._ec2_key = self.template.add_parameter(Parameter(
-           'ec2Key',
-            Type='String',
-            Default=ec2_key,
-            Description='Name of an existing EC2 KeyPair to enable SSH access to the instances',
-            AllowedPattern=res.get_str('ec2_key'),
-            MinLength=1,
-            MaxLength=255,
-            ConstraintDescription=res.get_str('ec2_key_message')
-        ))
+        self.template._ec2_key = self.template.add_parameter(
+            Parameter(
+                'ec2Key',
+                Type='String',
+                Default=ec2_key,
+                Description='Name of an existing EC2 KeyPair to enable SSH access to the instances',
+                AllowedPattern=res.get_str('ec2_key'),
+                MinLength=1,
+                MaxLength=255,
+                ConstraintDescription=res.get_str('ec2_key_message')
+            )
+        )
 
         bucket_name = self.config.get('logging').get('s3_bucket')
 
@@ -639,14 +636,14 @@ class EnvironmentBase(object):
         ami_cache_filename = res.DEFAULT_AMI_CACHE_FILENAME + res.EXTENSIONS[0]
 
         if os.path.isfile(ami_cache_filename):
-            overwrite = raw_input("%s already exists. Overwrite? (y/n) " % ami_cache_filename).lower()
+            overwrite = input("%s already exists. Overwrite? (y/n) " % ami_cache_filename).lower()
             print
             if not overwrite == 'y':
                 return
 
         with open(ami_cache_filename, 'w') as f:
             f.write(json.dumps(res.FACTORY_DEFAULT_AMI_CACHE, indent=4, separators=(',', ': ')))
-            print "Generated AMI cache file at %s\n" % ami_cache_filename
+            print("Generated AMI cache file at %s\n" % ami_cache_filename)
 
     def to_json(self):
         """
@@ -681,16 +678,14 @@ class EnvironmentBase(object):
         """
         return self.template.add_child_template(child_template, merge=merge, depends_on=depends_on)
 
-
     def write_stack_outputs_to_file(self, event_data):
         """
         Given the stack event data, determine if the stack has finished executing (CREATE_COMPLETE or UPDATE_COMPLETE)
         If it has, write the stack outputs to file
         """
         if event_data['type'] == 'AWS::CloudFormation::Stack' and \
-        (event_data['status'] == 'CREATE_COMPLETE' or event_data['status'] == 'UPDATE_COMPLETE'):
+                (event_data['status'] == 'CREATE_COMPLETE' or event_data['status'] == 'UPDATE_COMPLETE'):
             self.write_stack_output_to_file(stack_id=event_data['id'], stack_name=event_data['name'])
-
 
     def write_stack_output_to_file(self, stack_id, stack_name):
         """
@@ -714,8 +709,7 @@ class EnvironmentBase(object):
             output_file.write(json.dumps(stack_outputs, indent=4, separators=(',', ':')))
 
         if self.globals['print_debug']:
-            print "Outputs for {0} written to {1}\n".format(stack_name, stack_output_filename)
-
+            print("Outputs for {0} written to {1}\n".format(stack_name, stack_output_filename))
 
     def get_stack_output(self, stack_id, output_name):
         """
@@ -734,13 +728,11 @@ class EnvironmentBase(object):
         # If the output wasn't found in the stack, raise an exception
         raise Exception("%s did not output %s" % (stack_obj.stack_name, output_name))
 
-
     def get_cfn_stack_obj(self, stack_id):
         """
         Given the unique physical stack ID, return exactly one cloudformation stack object
         """
         return self.get_cfn_connection().describe_stacks(stack_id)[0]
-
 
     def get_cfn_connection(self):
         """
@@ -749,7 +741,6 @@ class EnvironmentBase(object):
         if not self.cfn_connection:
             self.cfn_connection = cloudformation.connect_to_region(self.config.get('boto').get('region_name'))
         return self.cfn_connection
-
 
     def get_sts_credentials(self, role_session_name, role_arn):
         """
@@ -763,4 +754,3 @@ class EnvironmentBase(object):
             )
             self.sts_credentials = assumed_role.credentials
         return self.sts_credentials
-
