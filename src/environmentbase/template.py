@@ -528,7 +528,7 @@ class Template(t.Template):
                 ami_name='amazonLinuxAmiId',
                 ec2_key=None,
                 user_data=None,
-                target_groups=None,
+                # target_groups=None,
                 security_groups=None,
                 min_size=1,
                 max_size=1,
@@ -684,8 +684,9 @@ class Template(t.Template):
             TerminationPolicies=['OldestLaunchConfiguration', 'ClosestToNextInstanceHour', 'Default'],
             DependsOn=depends_on,
             HealthCheckGracePeriod=health_check_grace_period,
-            HealthCheckType=health_check_type,
-            TargetGroupARNs=target_groups)
+            HealthCheckType=health_check_type
+            # TargetGroupARNs=target_groups
+        )
 
         lb_tmp = []
 
@@ -1340,4 +1341,3 @@ class Template(t.Template):
                 if a_subnet_layer == subnet_layer:
                     return subnet_type
         return None
-
