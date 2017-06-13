@@ -684,7 +684,7 @@ class Template(t.Template):
             TerminationPolicies=['OldestLaunchConfiguration', 'ClosestToNextInstanceHour', 'Default'],
             DependsOn=depends_on,
             HealthCheckGracePeriod=health_check_grace_period,
-            HealthCheckType=health_check_type,
+            HealthCheckType=health_check_type
             # TargetGroupARNs=target_groups
         )
 
