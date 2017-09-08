@@ -37,7 +37,9 @@ class HaNat(Template):
         '''
         self.add_nat_sg()
         self.add_nat_instance_profile()
-        self.add_nat_asg()
+        self.asg = self.add_nat_asg()
+        self.add_output(Output(self.asg.title, Value=Ref(self.asg)))
+
 
     def add_nat_sg(self):
         '''
