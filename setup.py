@@ -22,7 +22,7 @@ setup(
     version=__version__,
 
     description="Base environment for Troposphere based CFN project environments",
-    long_description="%s" % read("README.md"),
+    long_description="%s" % read("README.rst"),
 
     url='https://github.com/DualSpark/cloudformation-environmentbase',
 
@@ -63,20 +63,20 @@ setup(
     package_dir={"": "src"},
 
     install_requires=[
-        "troposphere==1.9.4",
-        "jmespath==0.7.1",
-        "boto==2.38.0",
-        "botocore==1.1.1",
-        "boto3==1.1.0",
-        "ipcalc==1.1.2",
+        "troposphere==1.9.6",
+        "jmespath==0.9.3",
+        "boto==2.48.0",
+        "botocore==1.7.19",
+        "boto3==1.4.7",
+        "ipcalc==1.99.0",
         "docopt==0.6.2",
-        "setuptools==17.1",
-        "awacs==0.6.0",
+        "setuptools==36.5.0",
+        "awacs==0.7.1",
         "commentjson==0.6",
-        "PyYAML==3.11",
-        "netaddr==0.7.18",
-        "toolz==0.7.4",
-        'pbr==1.8.0'
+        "PyYAML==3.12",
+        "netaddr==0.7.19",
+        "toolz==0.8.2",
+        'pbr==3.1.1'
     ],
 
     # Optional dependencies
