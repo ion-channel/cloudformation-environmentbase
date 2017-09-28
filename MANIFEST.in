@@ -4,8 +4,10 @@ graft src
 include AUTHORS.rst
 include CONTRIBUTING.rst
 include LICENSE
-include README.md
-
-include tox.ini appveyor.yml
+include README.rst
+include tox.ini
+include DEVELOPMENT.md
+include FILE_DESCRIPTIONS.md
+include get_parameters.py
 
 global-exclude *.py[co]
