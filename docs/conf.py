@@ -9,7 +9,7 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
-    'sphinxcontrib.napoleon'
+    #'sphinxcontrib.napoleon'
 ]
 if os.getenv('SPELLCHECK'):
     extensions += 'sphinxcontrib.spelling',
@@ -19,15 +19,15 @@ if os.getenv('SPELLCHECK'):
 source_suffix = '.rst'
 master_doc = 'index'
 project = u'CFN-Base'
-copyright = u'2014, Patrick McClory'
-version = release = re.findall(
-    'version="(.*)"',
-    open(os.path.join(os.path.dirname(__file__), '../setup.py')).read()
+copyright = u'2017, Ion Channel, Patrick McClory'
+version = release =  re.findall(
+    "__version__ = '(.*)'",
+    open(os.path.join(os.path.dirname('../'), 'src/environmentbase/version.py')).read()
 )[0]
 
-import sphinx_py3doc_enhanced_theme
-html_theme = "sphinx_py3doc_enhanced_theme"
-html_theme_path = [sphinx_py3doc_enhanced_theme.get_html_theme_path()]
+#import sphinx_py3doc_enhanced_theme
+#html_theme = "sphinx_py3doc_enhanced_theme"
+#html_theme_path = [sphinx_py3doc_enhanced_theme.get_html_theme_path()]
 
 pygments_style = 'trac'
 templates_path = ['.']
@@ -38,6 +38,6 @@ html_sidebars = {
    '**': ['searchbox.html', 'globaltoc.html', 'sourcelink.html'],
 }
 html_short_title = '%s-%s' % (project, version)
-html_theme_options = {
-    'githuburl': 'https://github.com/dualspark/cfn-base/'
-}
+# html_theme_options = {
+#     'githuburl': 'https://github.com/ion-channel/cloudformation-environmentbase'
+# }

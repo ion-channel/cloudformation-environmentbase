@@ -1,5 +1,6 @@
 from pkg_resources import resource_string, resource_exists
-import yaml, json
+import json
+import yaml
 import os
 
 
@@ -48,6 +49,7 @@ def get_resource(resource_name, relative_to_module_name=__name__):
     file_content = resource_string(relative_to_module_name, file_path)
     return file_content
 
+
 EXTENSIONS = ['.json', '.yaml', '.yml']
 
 DEFAULT_CONFIG_FILENAME = 'config'
@@ -75,6 +77,7 @@ def load_file(parent, basename):
 
     return load_yaml_file(file_path)
 
+
 def load_yaml_file(file_path):
 
     if not os.path.isfile(file_path):
@@ -87,13 +90,13 @@ def load_yaml_file(file_path):
             content = f.read()
             parsed_content = yaml.load(content)
         except ValueError:
-            print '%s could not be parsed' % file_path
+            print('%s could not be parsed' % file_path)
             raise
 
     return parsed_content
 
-def load_json_file(file_path):
 
+def load_json_file(file_path):
     if not os.path.isfile(file_path):
         # Whenever possible, don't use bare Exceptions like below (it's an anti-pattern)
         # Read more about it: https://realpython.com/blog/python/the-most-diabolical-python-antipattern/
@@ -104,7 +107,7 @@ def load_json_file(file_path):
             content = f.read()
             parsed_content = json.loads(content)
         except ValueError:
-            print '%s could not be parsed' % file_path
+            print('%s could not be parsed' % file_path)
             raise
 
     return parsed_content

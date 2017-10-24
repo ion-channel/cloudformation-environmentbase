@@ -17,7 +17,7 @@ Options:
 """
 
 from docopt import docopt
-import version
+from . import version
 import json
 
 
@@ -48,7 +48,7 @@ class CLI(object):
             config['global']['print_debug'] = True
 
             if not self.quiet:
-                print "CLI arguments", json.dumps(self.args, indent=4, sort_keys=True)
+                print("CLI arguments", json.dumps(self.args, indent=4, sort_keys=True))
 
         template_file = self.args.get('--template-file')
         if template_file is not None:
@@ -82,4 +82,4 @@ class CLI(object):
             try:
                 self._process_request_helper(controller)
             except Exception as e:
-                print "ERROR:\n\t{}\n\nTry running with the --debug flag\n".format(e.message)
+                print("ERROR:\n\t{}\n\nTry running with the --debug flag\n".format(e.message))

@@ -2,6 +2,8 @@ import utility
 import json
 import time
 import re
+import itertools
+
 
 TERMINAL_STATES = [
     'CREATE_COMPLETE',
@@ -96,9 +98,10 @@ class StackMonitor(object):
             elapsed = time.time() - start_time
 
             msgs = queue.receive_messages(WaitTimeSeconds=poll_interval, MaxNumberOfMessages=10)
-            # print 'grabbed batch of %s' % len(msgs)
+            # print('grabbed batch of %s' % len(msgs))
 
             for raw_msg in msgs:
+                spinner = itertools.cycle(['-', '/', '|', '\\'])
                 parsed_msg = json.loads(raw_msg.body)
                 msg_body = parsed_msg['Message']
 
@@ -120,17 +123,17 @@ class StackMonitor(object):
                     try:
                         data['props'] = json.loads(data['props'])
                     except (ValueError, TypeError):
-                        print "\nFailed to parse properties for event:\n{}\n".format(data['props'])
-                        print "\nRaw Message Body:\n{}\n".format(msg_body)
-                        print "\nParsed Message:\n{}\n".format(parsed_msg)
+                        print("\nFailed to parse properties for event:\n{}\n".format(data['props']))
+                        print("\nRaw Message Body:\n{}\n".format(msg_body))
+                        print("\nParsed Message:\n{}\n".format(parsed_msg))
                         pass
 
                 if debug:
-                    print "New Stack Event --------------\n", \
-                        data['status'], data['type'], data['name'], '\n', \
-                        data['reason'], '\n'
+                    print("New Stack Event --------------\n",
+                        data['status'], data['type'], data['name'], '\n',
+                        data['reason'], '\n')
                 else:
-                    pass
+                    spinner.next()
 
                 # clear the message
                 raw_msg.delete()
@@ -150,4 +153,4 @@ class StackMonitor(object):
                         and data['name'] == stack_name \
                         and data['status'] in TERMINAL_STATES:
                     is_stack_running = False
-                    # print 'termination condition found!'
+                    # print('termination condition found!')

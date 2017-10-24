@@ -3,7 +3,7 @@ __author__ = 'Eric Price'
 from datetime import date
 import boto3
 import json
-import re, sys
+import re
 
 VOL_TYPE_MAG = 'standard'
 VOL_TYPE_SSD = 'gp2'
@@ -85,13 +85,13 @@ def filter_amis(ami_list, remove_rcs=True, use_nat_instances=False, remove_minim
 
 def get_hvm_ami(filtered_amis, vol_type=VOL_TYPE_SSD):
     filter_fun = lambda ami: ami['VirtualizationType'] == VIRT_TYPE_HVM and \
-                             ami['BlockDeviceMappings'][0]['Ebs']['VolumeType'] == vol_type
+        ami['BlockDeviceMappings'][0]['Ebs']['VolumeType'] == vol_type
     return filter(filter_fun, filtered_amis)[0]
 
 
 def get_pv_ami(filtered_amis):
     filter_fun = lambda ami: ami['VirtualizationType'] == VIRT_TYPE_PV and \
-                             ami['BlockDeviceMappings'][0]['Ebs']['VolumeType'] == VOL_TYPE_MAG
+        ami['BlockDeviceMappings'][0]['Ebs']['VolumeType'] == VOL_TYPE_MAG
     return filter(filter_fun, filtered_amis)[0]
 
 
@@ -107,7 +107,7 @@ if __name__ == '__main__':
 
         # If no hits retry with last years AMIs
         if filtered_amis is None:
-            images = find_amis(region, YEAR-1)
+            images = find_amis(region, YEAR - 1)
             filtered_amis = filter_amis(images)
 
         hvm_ami = get_hvm_ami(filtered_amis)

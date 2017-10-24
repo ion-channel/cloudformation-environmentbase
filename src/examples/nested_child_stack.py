@@ -55,6 +55,7 @@ class GrandchildTemplate(Template):
             SubnetId=self.subnets['private'][0],
             SecurityGroupIds=[self.common_security_group]))
 
+
 if __name__ == '__main__':
 
     # EnvConfig holds references to handler classes used to extend certain functionality

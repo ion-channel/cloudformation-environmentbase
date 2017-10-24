@@ -25,4 +25,3 @@ class NetworkBase(EnvironmentBase):
 
         self.template._subnets = base_network_template._subnets.copy()
         self.template._vpc_id = GetAtt(base_network_template.name, 'Outputs.vpcId')
-

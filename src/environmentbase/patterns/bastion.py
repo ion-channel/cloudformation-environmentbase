@@ -58,7 +58,7 @@ class Bastion(Template):
             utility_bucket=self.utility_bucket
         )
 
-        bastion_asg = self.add_asg(
+        self.add_asg(
             layer_name=self.name,
             security_groups=[security_groups['bastion'], self.common_security_group],
             load_balancer=bastion_elb,
@@ -71,10 +71,12 @@ class Bastion(Template):
             Value=GetAtt(bastion_elb, 'DNSName')
         ))
 
-        self.add_output(Output(
-            'BastionELBDNSZoneId',
-             Value=GetAtt(bastion_elb, 'CanonicalHostedZoneNameID')
-         ))
+        self.add_output(
+            Output(
+                'BastionELBDNSZoneId',
+                Value=GetAtt(bastion_elb, 'CanonicalHostedZoneNameID')
+            )
+        )
 
         self.add_output(Output(
             'BastionSecurityGroupId',

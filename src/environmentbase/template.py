@@ -1,15 +1,13 @@
-from troposphere import Output, Ref, Join, Parameter, Base64, GetAtt, FindInMap, Retain, Select, GetAZs, Tags
+from troposphere import Output, Ref, Join, Parameter, Base64, GetAtt, FindInMap, Retain, Tags
 from troposphere import iam, ec2, autoscaling, route53 as r53, s3, logs, cloudwatch
 from awacs import logs as awacs_logs, aws
 from awacs.helpers.trust import make_simple_assume_statement
 import troposphere as t
-import troposphere.constants as tpc
 import troposphere.elasticloadbalancing as elb
 import troposphere.cloudformation as cf
 import hashlib
 import json
 import os
-import time
 from datetime import datetime
 import resources as res
 import utility
@@ -143,19 +141,19 @@ class Template(t.Template):
         These typically get initialized for a template when add_child_template is called
         from the controller, but that never happens when merging two templates
         """
-        self._vpc_cidr               = other_template._vpc_cidr
-        self._vpc_id                 = other_template._vpc_id
-        self._common_security_group  = other_template._common_security_group
-        self._utility_bucket         = other_template._utility_bucket
+        self._vpc_cidr = other_template._vpc_cidr
+        self._vpc_id = other_template._vpc_id
+        self._common_security_group = other_template._common_security_group
+        self._utility_bucket = other_template._utility_bucket
 
-        self._subnets    = other_template.subnets.copy()
+        self._subnets = other_template.subnets.copy()
 
         self.parameters = other_template.parameters.copy()
-        self.mappings   = other_template.mappings.copy()
-        self.metadata   = other_template.metadata.copy()
+        self.mappings = other_template.mappings.copy()
+        self.metadata = other_template.metadata.copy()
         self.conditions = other_template.conditions.copy()
-        self.outputs    = other_template.outputs.copy()
-        self.resources  = other_template.resources.copy()
+        self.outputs = other_template.outputs.copy()
+        self.resources = other_template.resources.copy()
 
     def build_hook(self):
         """
@@ -253,21 +251,24 @@ class Template(t.Template):
         using the provided iam_policies. The instance_profile will be created at:
         '/<path_prefix>/<layer_name>/'
         """
-        iam_role_obj = iam.Role(layer_name + 'IAMRole',
-                AssumeRolePolicyDocument={
-                    'Statement': [{
-                        'Effect': 'Allow',
-                        'Principal': {'Service': ['ec2.amazonaws.com']},
-                        'Action': ['sts:AssumeRole']
-                    }]},
-                    Path=Join('', ['/' + path_prefix + '/', layer_name , '/']))
+        iam_role_obj = iam.Role(
+            layer_name + 'IAMRole',
+            AssumeRolePolicyDocument={
+                'Statement': [{
+                    'Effect': 'Allow',
+                    'Principal': {'Service': ['ec2.amazonaws.com']},
+                    'Action': ['sts:AssumeRole']
+                }]},
+            Path=Join('', ['/' + path_prefix + '/', layer_name, '/']))
 
-        if iam_policies != None:
+        if iam_policies is not None:
             iam_role_obj.Policies = iam_policies
 
         iam_role = self.add_resource(iam_role_obj)
 
-        return self.add_resource(iam.InstanceProfile(layer_name + 'InstancePolicy',
+        return self.add_resource(
+            iam.InstanceProfile(
+                layer_name + 'InstancePolicy',
                 Path='/' + path_prefix + '/',
                 Roles=[Ref(iam_role)]))
 
@@ -323,16 +324,18 @@ class Template(t.Template):
             Description='Name of the S3 bucket used for infrastructure utility',
             Type='String'))
 
-        self._ec2_key = self.add_parameter(Parameter(
-           'ec2Key',
-            Type='String',
-            Default=ec2_key,
-            Description='Name of an existing EC2 KeyPair to enable SSH access to the instances',
-            AllowedPattern=res.get_str('ec2_key'),
-            MinLength=1,
-            MaxLength=255,
-            ConstraintDescription=res.get_str('ec2_key_message')
-        ))
+        self._ec2_key = self.add_parameter(
+            Parameter(
+                'ec2Key',
+                Type='String',
+                Default=ec2_key,
+                Description='Name of an existing EC2 KeyPair to enable SSH access to the instances',
+                AllowedPattern=res.get_str('ec2_key'),
+                MinLength=1,
+                MaxLength=255,
+                ConstraintDescription=res.get_str('ec2_key_message')
+            )
+        )
 
         self.template_bucket_param = self.add_parameter(Parameter(
             Template.template_bucket_param,
@@ -363,7 +366,6 @@ class Template(t.Template):
                         Description=subnet_name,
                         Type='String')))
 
-
     @staticmethod
     def construct_user_data(env_vars={}, user_data=''):
         """
@@ -379,7 +381,7 @@ class Template(t.Template):
         # If the variable value is not a string, use the Join function
         # This handles Refs, Parameters, etc. which are evaluated at runtime
         variable_declarations = []
-        for k,v in env_vars.iteritems():
+        for k, v in env_vars.iteritems():
             if isinstance(v, basestring):
                 variable_declarations.append('%s=%s' % (k, v))
             else:
@@ -389,7 +391,6 @@ class Template(t.Template):
             bootstrap_files=[user_data],
             variable_declarations=variable_declarations
         )
-
 
     @staticmethod
     def build_bootstrap(bootstrap_files=None,
@@ -475,12 +476,14 @@ class Template(t.Template):
             if region_name not in self.mappings['RegionMap']:
                 self.mappings['RegionMap'][region_name] = {}
 
-    def add_scaling_policy(self,
+    def add_scaling_policy(
+        self,
         metric_name,
         asg_name,
         adjustment_type="ChangeInCapacity",
         cooldown=1,
-        scaling_adjustment=1):
+        scaling_adjustment=1
+    ):
         """
         Helper method to encapsulate process of adding a scaling policy to an autoscaling group in this template
         """
@@ -493,7 +496,8 @@ class Template(t.Template):
 
         return self.add_resource(policy)
 
-    def add_cloudwatch_alarm(self,
+    def add_cloudwatch_alarm(
+        self,
         layer_name,
         scaling_policy_name,
         asg_name,
@@ -503,7 +507,8 @@ class Template(t.Template):
         threshold=10,
         period=60,
         namespace='AWS/EC2',
-        comparison_operator='GreaterThanThreshold'):
+        comparison_operator='GreaterThanThreshold'
+    ):
         """
         Helper method to encapsulate process of adding a cloudwatch alarm resource to a scaling policy
         """
@@ -515,7 +520,7 @@ class Template(t.Template):
             Period=str(period),
             AlarmActions=[Ref(scaling_policy_name)],
             Namespace=namespace,
-            Dimensions=[cloudwatch.MetricDimension(Name="AutoScalingGroupName",Value=Ref(asg_name))],
+            Dimensions=[cloudwatch.MetricDimension(Name="AutoScalingGroupName", Value=Ref(asg_name))],
             ComparisonOperator=comparison_operator,
             MetricName=metric_name)
 
@@ -714,7 +719,6 @@ class Template(t.Template):
         if update_policy is not None:
             auto_scaling_obj.resource['UpdatePolicy'] = update_policy
 
-
         if custom_tags is not None and len(custom_tags) > 0:
             final_custom_tags = []
             if type(custom_tags) == dict:
@@ -733,20 +737,21 @@ class Template(t.Template):
                     scaling_policy.get('metric_name'),
                     auto_scaling_obj.name,
                     scaling_adjustment=scaling_policy.get('scaling_adjustment'),
-                    adjustment_type=scaling_policy.get('adjustment_type','ChangeInCapacity'),
-                    cooldown=scaling_policy.get('cooldown',1))
+                    adjustment_type=scaling_policy.get('adjustment_type', 'ChangeInCapacity'),
+                    cooldown=scaling_policy.get('cooldown', 1))
 
-                self.add_cloudwatch_alarm(scaling_policy.get('metric_name'),
+                self.add_cloudwatch_alarm(
+                    scaling_policy.get('metric_name'),
                     policy_obj.name,
                     auto_scaling_obj.name,
                     metric_name=scaling_policy.get('metric_name'),
                     threshold=scaling_policy.get('threshold'),
-                    comparison_operator=scaling_policy.get('comparison_operator','GreaterThanThreshold'),
-                    evaluation_periods=scaling_policy.get('evaluation_periods',1),
+                    comparison_operator=scaling_policy.get('comparison_operator', 'GreaterThanThreshold'),
+                    evaluation_periods=scaling_policy.get('evaluation_periods', 1),
                     statistic=scaling_policy.get('statistic', 'Average'),
                     period=scaling_policy.get('period', 60),
-                    namespace=scaling_policy.get('namespace','AWS/EC2'),
-                    )
+                    namespace=scaling_policy.get('namespace', 'AWS/EC2'),
+                )
 
         auto_scaling_obj.Tags.append(autoscaling.Tag('Name', self._autoscaling_name_tag_value(), True))
         return self.add_resource(auto_scaling_obj)
@@ -758,7 +763,7 @@ class Template(t.Template):
         return self.name
 
     def add_elb(self,
-                    resource_name,
+                resource_name,
                 listeners,
                 utility_bucket=None,
                 elb_custom_tags=None,
@@ -790,15 +795,15 @@ class Template(t.Template):
             subnet_type = 'public' if scheme == 'internet-facing' else 'private'
             subnet_layer = self._subnets[subnet_type].keys()[0]
 
-        ## Add optional parameters for LoadBalancer to this dictionary
+        # Add optional parameters for LoadBalancer to this dictionary
         optional_elb_kwargs = {}
 
-        ## ConnectionDrainingPolicy
+        # ConnectionDrainingPolicy
         if connection_draining_timeout is not None:
             connection_draining_policy = self.get_elb_connection_draining_policy(Timeout=connection_draining_timeout)
             optional_elb_kwargs["ConnectionDrainingPolicy"] = connection_draining_policy
 
-        ## LBCookieStickinessPolicy
+        # LBCookieStickinessPolicy
         # TODO: Allow for a *list* of policies to be defined from input parameters
         http_stickiness_policy_names = []
 
@@ -825,7 +830,6 @@ class Template(t.Template):
         # If the health_check_port was not specified, use the instance port of any of the listeners (elb_port is used if instance_port isn't set)
         if not health_check_port:
             health_check_port = [listener.get('instance_port') if listener.get('instance_port') else listener.get('elb_port') for listener in listeners][0]
-
 
         # Construct the ELB Health Check target based on the passed in health_check_protocol and health_check_port parameters
         health_check_protocol = health_check_protocol.upper()
@@ -857,8 +861,7 @@ class Template(t.Template):
         if idle_timeout:
             elb_obj.ConnectionSettings = elb.ConnectionSettings(IdleTimeout=idle_timeout)
 
-
-        ## Add custom tags
+        # Add custom tags
         if elb_custom_tags:
             elb_obj.Tags = Tags(**elb_custom_tags)
 
@@ -902,7 +905,7 @@ class Template(t.Template):
         }
         Source: http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-elb-connectiondrainingpolicy.html
         """
-        connection_draining_policy_kwargs = { "Enabled" : Enabled, }
+        connection_draining_policy_kwargs = {"Enabled": Enabled}
         connection_draining_policy_kwargs.update(kwargs)
 
         connection_draining_policy = elb.ConnectionDrainingPolicy(**connection_draining_policy_kwargs)
@@ -916,7 +919,7 @@ class Template(t.Template):
         }
         Source: http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-elb-connectiondrainingpolicy.html
         """
-        stickiness_policy_kwargs = { "PolicyName" : PolicyName, }
+        stickiness_policy_kwargs = {"PolicyName": PolicyName}
         stickiness_policy_kwargs.update(kwargs)
 
         stickiness_policy = elb.LBCookieStickinessPolicy(**stickiness_policy_kwargs)
@@ -1041,12 +1044,12 @@ class Template(t.Template):
         @param utility_bucket [Troposphere.s3.Bucket] object reference of the utility bucket for this tier
         @param elb_log_prefix [string] prefix for paths used to prefix the path where ELB will place access logs
         """
-        if elb_log_prefix != None and elb_log_prefix != '':
+        if elb_log_prefix is not None and elb_log_prefix != '':
             elb_log_prefix = elb_log_prefix + '/'
         else:
             elb_log_prefix = ''
 
-        if cloudtrail_log_prefix != None and cloudtrail_log_prefix != '':
+        if cloudtrail_log_prefix is not None and cloudtrail_log_prefix != '':
             cloudtrail_log_prefix = cloudtrail_log_prefix + '/'
         else:
             cloudtrail_log_prefix = ''
@@ -1330,7 +1333,6 @@ class Template(t.Template):
                 stack_params[parameter] = Ref(new_param)
 
         return stack_params
-
 
     def get_subnet_type(self, subnet_layer):
         """

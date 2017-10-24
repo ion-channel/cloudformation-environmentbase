@@ -97,6 +97,7 @@ def get_stack_depends_on_from_parent_template(parent_template_contents, stack_na
     # Otherwise return the DependsOn list that the stack was deployed with
     return stack_reference.get('DependsOn')
 
+
 def get_template_s3_resource_path(prefix, template_name, include_timestamp=True):
     """
     Constructs s3 resource path for provided template name
@@ -120,4 +121,3 @@ def get_template_s3_url(bucket_name, resource_path):
     :return string: S3 Url of cloudformation templates
     """
     return 'https://%s.s3.amazonaws.com/%s' % (bucket_name, resource_path)
-
