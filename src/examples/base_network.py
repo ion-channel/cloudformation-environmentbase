@@ -10,5 +10,6 @@ class MyEnvClass(NetworkBase):
         # Do custom troposphere resource creation here
         super(MyEnvClass, self).create_hook()
 
+
 if __name__ == '__main__':
     MyEnvClass()

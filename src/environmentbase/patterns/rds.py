@@ -81,7 +81,7 @@ class RDS(Template):
 
         self.data = {}
 
-        super(RDS, self).__init__(template_name=tier_name+'RDSInstance')
+        super(RDS, self).__init__(template_name=tier_name + 'RDSInstance')
 
     # When no config.json file exists a new one is created using the 'factory default' file.  This function
     # augments the factory default before it is written to file with the config values required

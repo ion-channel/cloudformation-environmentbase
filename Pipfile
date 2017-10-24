@@ -1,0 +1,28 @@
+[[source]]
+
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+
+[dev-packages]
+
+
+
+[packages]
+
+tox = "*"
+coverage = "*"
+mock = "*"
+"unittest2" = "*"
+pyyaml = "*"
+moto = "*"
+"flake8" = "*"
+pygments = "*"
+sphinx = "*"
+botocore = "==1.7.19"
+
+
+[requires]
+
+python_version = "2.7"

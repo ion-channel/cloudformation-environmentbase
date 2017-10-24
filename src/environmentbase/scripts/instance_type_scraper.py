@@ -16,6 +16,7 @@ SELECT_TABLE_DISCRIMINATOR = "table > thead > tr > th:nth-child(2)"
 
 INSTANCE_TYPE_DELIMITER = ' | '
 
+
 def get_page(url):
     html = urlopen(url).read()
     dom = fromstring(html)
@@ -46,6 +47,7 @@ def get_instance_types(tbl):
 def build_type_to_arch_map(tbl, arch_type, map):
     for it in get_instance_types(tbl):
         map[it] = {'Arch': arch_type}
+
 
 if __name__ == '__main__':
     dom = get_page("http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html")

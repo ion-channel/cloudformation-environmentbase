@@ -40,7 +40,6 @@ class HaNat(Template):
         self.asg = self.add_nat_asg()
         self.add_output(Output(self.asg.title, Value=Ref(self.asg)))
 
-
     def add_nat_sg(self):
         '''
         Create the NAT security group and add the ingress/egress rules
@@ -102,29 +101,33 @@ class HaNat(Template):
                 "ec2:DescribeVpcs"
             ])
 
-        nat_role = self.add_resource(Role(
-            "Nat%sRole" % str(self.subnet_index),
-            AssumeRolePolicyDocument={
-                "Statement": [{
-                    "Effect": "Allow",
-                    "Principal": {
-                        "Service": ["ec2.amazonaws.com"]
-                    },
-                    "Action": ["sts:AssumeRole"]
-                 }]
-            },
-            Path="/",
-            Policies=[Policy(
-                PolicyName="NAT%sPolicy" % str(self.subnet_index),
-                PolicyDocument={
-                    "Statement": [{
-                        "Effect": "Allow",
-                        "Action": policy_actions,
-                        "Resource": "*"
-                    }] + self.get_extra_policy_statements()
-                }
-            )]
-        ))
+        nat_role = self.add_resource(
+            Role(
+                "Nat%sRole" % str(self.subnet_index),
+                AssumeRolePolicyDocument={
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": ["ec2.amazonaws.com"]
+                            },
+                            "Action": ["sts:AssumeRole"]
+                        }
+                    ]
+                },
+                Path="/",
+                Policies=[Policy(
+                    PolicyName="NAT%sPolicy" % str(self.subnet_index),
+                    PolicyDocument={
+                        "Statement": [{
+                            "Effect": "Allow",
+                            "Action": policy_actions,
+                            "Resource": "*"
+                        }] + self.get_extra_policy_statements()
+                    }
+                )]
+            )
+        )
 
         self.instance_profile = self.add_resource(InstanceProfile(
             "Nat%sInstanceProfile" % str(self.subnet_index),
@@ -150,7 +153,7 @@ class HaNat(Template):
             " --stack ", {"Ref": "AWS::StackName"},
             " --region ", {"Ref": "AWS::Region"}
         ])
- 
+
         nat_launch_config = self.add_resource(LaunchConfiguration(
             "Nat%sLaunchConfig" % str(self.subnet_index),
             UserData=Base64(Join('', user_data)),
@@ -170,7 +173,7 @@ class HaNat(Template):
             nat_asg_name,
             DesiredCapacity=1,
             Tags=[
-                Tag("Name", Join("-", ["NAT", self.subnet_index,]), True),
+                Tag("Name", Join("-", ["NAT", self.subnet_index, ]), True),
                 Tag("isNat", "true", True)
             ],
             MinSize=1,

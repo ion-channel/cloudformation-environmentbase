@@ -1,14 +1,10 @@
 from troposphere import Ref, FindInMap, Output, GetAZs, Select
 import troposphere.ec2 as ec2
-import boto.vpc
-import boto
-from ipcalc import Network
 import ha_nat
 import netaddr
 from toolz import groupby, assoc
 
 from environmentbase.template import Template
-from environmentbase.utility import tropo_to_string
 
 
 class BaseNetwork(Template):
@@ -103,16 +99,18 @@ class BaseNetwork(Template):
         """
         network_config = self.network_config
         nat_config = self.nat_config
-        az_count = self.az_count
 
         self.add_network_cidr_mapping(network_config=network_config)
         self._prepare_subnets(self._subnet_configs)
         self.create_network_components(network_config=network_config, nat_config=nat_config)
 
-        self._common_security_group = self.add_resource(ec2.SecurityGroup('commonSecurityGroup',
-            GroupDescription='Security Group allows ingress and egress for common usage patterns throughout this deployed infrastructure.',
-            VpcId=self.vpc_id,
-            SecurityGroupEgress=[ec2.SecurityGroupRule(
+        self._common_security_group = self.add_resource(
+            ec2.SecurityGroup(
+                'commonSecurityGroup',
+                GroupDescription='Security Group allows ingress and egress for common usage patterns throughout this deployed infrastructure.',
+                VpcId=self.vpc_id,
+                SecurityGroupEgress=[
+                    ec2.SecurityGroupRule(
                         FromPort='80',
                         ToPort='80',
                         IpProtocol='tcp',
@@ -127,7 +125,7 @@ class BaseNetwork(Template):
                         ToPort='123',
                         IpProtocol='udp',
                         CidrIp='0.0.0.0/0')],
-            SecurityGroupIngress=[
+                SecurityGroupIngress=[
                     ec2.SecurityGroupRule(
                         FromPort='22',
                         ToPort='22',
@@ -160,7 +158,7 @@ class BaseNetwork(Template):
         @param network_config [dict] collection of network parameters for creating the VPC network
         """
 
-        ## make VPC
+        # make VPC
         if 'network_name' in network_config:
             network_name = network_config.get('network_name')
         else:
@@ -170,7 +168,9 @@ class BaseNetwork(Template):
         self.add_output(Output('networkAddresses', Value=str(self.mappings['networkAddresses'])))
         self.add_output(Output('vpcCidr', Value=self.vpc_cidr))
 
-        self._vpc_id = self.add_resource(ec2.VPC('vpc',
+        self._vpc_id = self.add_resource(
+            ec2.VPC(
+                'vpc',
                 CidrBlock=self._vpc_cidr,
                 EnableDnsSupport=True,
                 EnableDnsHostnames=True,
@@ -181,7 +181,7 @@ class BaseNetwork(Template):
         self._igw = self.add_resource(ec2.InternetGateway('vpcIgw'))
         self.add_output(Output('internetGateway', Value=self.igw))
 
-        ## add IGW
+        # add IGW
         igw_title = 'igwVpcAttachment'
         self._vpc_gateway_attachment = self.add_resource(ec2.VPCGatewayAttachment(
             igw_title,
@@ -195,11 +195,9 @@ class BaseNetwork(Template):
         # make Subnets
         for index, subnet_config in enumerate(self._subnet_configs):
             subnet_type = subnet_config.get('type', 'private')
-            subnet_size = subnet_config.get('size', '22')
             subnet_layer = subnet_config.get('name', 'subnet')
             subnet_az = subnet_config.get('AZ', '-1')
             subnet_cidr = subnet_config.get('cidr', 'ERROR')
-            az_key = 'AZ{}'.format(subnet_az)
 
             CidrBlock = subnet_cidr
             # Create the subnet
@@ -237,11 +235,15 @@ class BaseNetwork(Template):
 
         # For public subnets, create the route to the IGW
         if subnet_type == 'public':
-            self.add_resource(ec2.Route(subnet_layer + 'AZ' + str(subnet_az) + 'EgressRoute',
-                DependsOn=[igw_title],
-                DestinationCidrBlock='0.0.0.0/0',
-                GatewayId=self.igw,
-                RouteTableId=Ref(route_table)))
+            self.add_resource(
+                ec2.Route(
+                    subnet_layer + 'AZ' + str(subnet_az) + 'EgressRoute',
+                    DependsOn=[igw_title],
+                    DestinationCidrBlock='0.0.0.0/0',
+                    GatewayId=self.igw,
+                    RouteTableId=Ref(route_table)
+                )
+            )
 
         # For private subnets, create a NAT instance in a public subnet in the same AZ
         elif subnet_type == 'private':
@@ -296,9 +298,7 @@ class BaseNetwork(Template):
     def _get_subnet_config_w_cidr(self, network_config):
         network_cidr_base = str(network_config.get('network_cidr_base', '172.16.0.0'))
         network_cidr_size = str(network_config.get('network_cidr_size', '20'))
-        first_network_address_block = str(network_config.get('first_network_address_block', network_cidr_base))
 
-        ret_val = {}
         base_cidr = network_cidr_base + '/' + network_cidr_size
         net = netaddr.IPNetwork(base_cidr)
 
@@ -312,8 +312,8 @@ class BaseNetwork(Template):
             for subnet_config in subnet_configs:
                 try:
                     cidr = newcidrs.next()
-                except StopIteration as e:
-                    net = chain(*reversed(available_cidrs)).next()
+                except StopIteration:
+                    # net = chain(*reversed(available_cidrs)).next()
                     newcidrs = net.subnet(int(subnet_size))
                     cidr = newcidrs.next()
 
@@ -323,7 +323,6 @@ class BaseNetwork(Template):
                 net = newcidrs.next()
                 available_cidrs.append(newcidrs)
 
-
     def add_network_cidr_mapping(self,
                                  network_config):
         """
@@ -332,23 +331,19 @@ class BaseNetwork(Template):
         fit inside of the specified overall VPC CIDR.
         @param network_config [dict] dictionary of values containing data for creating
         """
-        az_count = int(network_config.get('az_count', '2'))
         network_cidr_base = str(network_config.get('network_cidr_base', '172.16.0.0'))
         network_cidr_size = str(network_config.get('network_cidr_size', '20'))
-        first_network_address_block = str(network_config.get('first_network_address_block', network_cidr_base))
 
         ret_val = {}
         base_cidr = network_cidr_base + '/' + network_cidr_size
-        cidr_info = Network(base_cidr)
         ret_val['vpcBase'] = {'cidr': base_cidr}
-        current_base_address = first_network_address_block
 
         subnet_config = self._get_subnet_config_w_cidr(network_config)
         subnet_config = self._subnet_configs = list(subnet_config)
 
         for index, subnet_config in enumerate(subnet_config):
-            subnet_type = subnet_config.get('type', 'private')
-            subnet_size = subnet_config.get('size', '22')
+            # subnet_config.get('type', 'private')
+            # subnet_config.get('size', '22')
             subnet_name = subnet_config.get('name', 'subnet')
             subnet_az = subnet_config.get('AZ', '-1')
             subnet_cidr = subnet_config.get('cidr', 'ERROR')
@@ -375,11 +370,19 @@ class BaseNetwork(Template):
         else:
             vpn_name = self.__class__.__name__ + 'Gateway'
 
-        gateway = self.add_resource(ec2.VPNGateway('vpnGateway',
-            Type=vpn_conf.get('vpn_type', 'ipsec.1'),
-            Tags=[ec2.Tag(key='Name', value=vpn_name)]))
+        gateway = self.add_resource(
+            ec2.VPNGateway(
+                'vpnGateway',
+                Type=vpn_conf.get('vpn_type', 'ipsec.1'),
+                Tags=[ec2.Tag(key='Name', value=vpn_name)]
+            )
+        )
 
-        gateway_connection = self.add_resource(ec2.VPCGatewayAttachment('vpnGatewayAttachment',
-            VpcId=self.vpc_id,
-            InternetGatewayId=self.igw,
-            VpnGatewayId=gateway))
+        self.add_resource(
+            ec2.VPCGatewayAttachment(
+                'vpnGatewayAttachment',
+                VpcId=self.vpc_id,
+                InternetGatewayId=self.igw,
+                VpnGatewayId=gateway
+            )
+        )

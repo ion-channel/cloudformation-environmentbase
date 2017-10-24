@@ -1,5 +1,5 @@
 cfnbase
 =============================
 
-.. automodule:: cfnbase
+.. automodule:: cfn-environment-base
     :members:

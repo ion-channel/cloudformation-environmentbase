@@ -155,9 +155,9 @@ class EnvironmentUtil(object):
             if type(template_string_or_url) == dict:
                 command_args['template_body'] = json.dumps(template_string_or_url)
             else:
-                template_dict = json.loads(template_string_or_url)
+                # template_dict = json.loads(template_string_or_url)
                 command_args['template_body'] = template_string_or_url
-        except:
+        except TypeError:
             command_args['template_s3_url'] = template_string_or_url
 
         logging.debug('Calling stack deploy for [' + stack_name + '] with arguments: ' + json.dumps(command_args))
@@ -173,6 +173,7 @@ class EnvironmentUtil(object):
                 return False
         else:
             return True
+
 
 if __name__ == '__main__':
     arguments = docopt(__doc__, version='environmentbase-cfn environment_util %s' % __version__)
