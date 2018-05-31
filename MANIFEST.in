@@ -12,3 +12,4 @@ include get_parameters.py
 include Pipfile
 
 global-exclude *.py[co]
+exclude .ionize.yaml
