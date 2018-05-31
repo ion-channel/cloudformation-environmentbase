@@ -9,3 +9,5 @@ install:
 script:
   - tox -e clean,check,py27,report
   - ionize analyze
+notifications:
+  email: false
