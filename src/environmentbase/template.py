@@ -540,6 +540,7 @@ class Template(t.Template):
                 desired_capacity=DEFAULT_TO_MIN_SIZE,
                 root_volume_size=None,
                 root_volume_type=None,
+                root_volume_mount=None,
                 include_ephemerals=True,
                 number_ephemeral_vols=2,
                 ebs_data_volumes=None,  # [{'size':'100', 'type':'gp2', 'delete_on_termination': True, 'iops': 4000, 'volume_type': 'io1'}],
@@ -568,6 +569,7 @@ class Template(t.Template):
         @param max_size [int|Parameter] value to set as the maximum number of instances for the Auto Scaling group
         @param desired_capacity [int|Parameter] value to set as the maximum number of instances for the Auto Scaling group
         @param root_volume_size [int] size (in GiB) to assign to the root volume of the launched instance
+        @param root_volume_mount [string] mount point for root volume of the launched instance
         @param include_ephemerals [Boolean] indicates that ephemeral volumes should be included in the block device mapping of the Launch Configuration
         @param number_ephemeral_vols [int] number of ephemeral volumes to attach within the block device mapping Launch Configuration
         @param ebs_data_volumes [list] dictionary pair of size and type data properties in a list used to create ebs volume attachments
@@ -635,8 +637,12 @@ class Template(t.Template):
             if root_volume_type:
                 ebs_device.VolumeType = root_volume_type
 
+            ebs_root_mount='sda1'
+            if root_volume_mount:
+                ebs_root_mount = root_volume_mount
+
             block_devices.append(ec2.BlockDeviceMapping(
-                DeviceName='/dev/sda1',
+                DeviceName='/dev/' + ebs_root_mount,
                 Ebs=ebs_device))
 
         device_names = ['/dev/sd%s' % c for c in 'bcdefghijklmnopqrstuvwxyz']
