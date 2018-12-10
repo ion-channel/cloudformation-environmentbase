@@ -72,7 +72,7 @@ setup(
         "setuptools==36.5.0",
         "awacs==0.7.1",
         "commentjson==0.6",
-        "PyYAML==3.12",
+        "PyYAML==3.13",
         "netaddr==0.7.19",
         "toolz==0.8.2",
         'pbr==3.1.1'
