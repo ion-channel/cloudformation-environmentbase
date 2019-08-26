@@ -53,7 +53,7 @@ class EnvironmentUtil(object):
         vpc_conn = boto.connect_vpc(aws_region)
         logging.debug('Connected to VPC in region [' + aws_region + ']')
         for region in vpc_conn.get_all_regions():
-            if region.name not in region_map.keys():
+            if region.name not in list(region_map.keys()):
                 logging.debug('Adding region [' + region.name + '] to region map.')
                 region_map[region.name] = {}
             ec2_conn = boto.connect_ec2(region.name)

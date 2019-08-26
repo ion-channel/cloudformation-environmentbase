@@ -24,7 +24,7 @@ Examples:
     $ python get_parameters.py s3://tropos-bucket/templates/v2/microservices-root.template networkbase user-runtime-root --output cli
         ParameterKey=SwarmManagerSecurityGroupId,ParameterValue=sg-bc973edb ...
 '''
-import urlparse
+import urllib.parse
 import logging
 import json
 import yaml
@@ -53,10 +53,10 @@ def main(arguments):
     additional_parameters = get_additional_parameters(extra_yamls)
     additional_outputs.update(additional_parameters)
     final_parameters = dict(get_final_parameters(parameters, additional_outputs))
-    print format_final_parameters(final_parameters, output_format)
+    print(format_final_parameters(final_parameters, output_format))
 
 def get_root_params(s3_root_template):
-    s3, bucket, key, _, _, _ = urlparse.urlparse(s3_root_template)
+    s3, bucket, key, _, _, _ = urllib.parse.urlparse(s3_root_template)
     key = key.strip('/')
     logger.debug( (bucket, key) )
     response = client_s3.get_object(Bucket=bucket, Key=key)

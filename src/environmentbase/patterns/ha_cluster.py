@@ -108,7 +108,7 @@ class HaCluster(Template):
 
         # Translate the custom_tags dict to a list of autoscaling Tags
         self.custom_tags = []
-        for key, value in custom_tags.iteritems():
+        for key, value in custom_tags.items():
             self.custom_tags.append(autoscaling.Tag(key, value, True))
 
         # Save ELB tags for add_cluster_elb
@@ -161,9 +161,9 @@ class HaCluster(Template):
         """
         if not self.subnet_layer:
             if len(self._subnets.get('private')) > 0:
-                self.subnet_layer = self._subnets['private'].keys()[0]
+                self.subnet_layer = list(self._subnets['private'].keys())[0]
             else:
-                self.subnet_layer = self._subnets['public'].keys()[0]
+                self.subnet_layer = list(self._subnets['public'].keys())[0]
 
     def add_security_groups(self):
         """

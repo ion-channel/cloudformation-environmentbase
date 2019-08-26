@@ -18,8 +18,8 @@ if os.getenv('SPELLCHECK'):
 
 source_suffix = '.rst'
 master_doc = 'index'
-project = u'CFN-Base'
-copyright = u'2017, Ion Channel, Patrick McClory'
+project = 'CFN-Base'
+copyright = '2017, Ion Channel, Patrick McClory'
 version = release =  re.findall(
     "__version__ = '(.*)'",
     open(os.path.join(os.path.dirname('../'), 'src/environmentbase/version.py')).read()

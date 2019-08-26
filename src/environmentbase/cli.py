@@ -48,7 +48,7 @@ class CLI(object):
             config['global']['print_debug'] = True
 
             if not self.quiet:
-                print("CLI arguments", json.dumps(self.args, indent=4, sort_keys=True))
+                print(("CLI arguments", json.dumps(self.args, indent=4, sort_keys=True)))
 
         template_file = self.args.get('--template-file')
         if template_file is not None:
@@ -72,7 +72,7 @@ class CLI(object):
         Controller has finished initializing its config. This function maps user requested action to
         controller.XXX_action().  Currently supported actions: init_action(), create_action(), deploy_action(), delete_action().
         """
-        print
+        print()
 
         # Allow the full stack trace to print out when the debug flag is enabled
         if self.args.get('--debug'):
@@ -82,4 +82,4 @@ class CLI(object):
             try:
                 self._process_request_helper(controller)
             except Exception as e:
-                print("ERROR:\n\t{}\n\nTry running with the --debug flag\n".format(e.message))
+                print(("ERROR:\n\t{}\n\nTry running with the --debug flag\n".format(e.message)))

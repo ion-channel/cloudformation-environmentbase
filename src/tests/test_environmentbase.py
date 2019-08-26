@@ -51,10 +51,10 @@ class EnvironmentBaseTestCase(TestCase):
                 config_requirements.update(handler.get_config_schema())
 
         config = {}
-        for (section, keys) in config_requirements.iteritems():
+        for (section, keys) in config_requirements.items():
             config[section] = {}
-            for (key, key_type) in keys.iteritems():
-                if key_type == basestring.__name__ or key_type == str.__name__:
+            for (key, key_type) in keys.items():
+                if key_type == str.__name__ or key_type == str.__name__:
                     config[section][key] = dummy_string
                 elif key_type == bool.__name__:
                     config[section][key] = dummy_bool
@@ -191,7 +191,7 @@ class EnvironmentBaseTestCase(TestCase):
         section = ''
         keys = {}
         while True:
-            (section, keys) = valid_config.items()[0]
+            (section, keys) = list(valid_config.items())[0]
             if len(keys) > 0:
                 break
         assert len(keys) > 0
@@ -203,7 +203,7 @@ class EnvironmentBaseTestCase(TestCase):
             cntrl._validate_config(invalid_config)
 
         # Check missing key validation
-        (key, value) = keys.items()[0]
+        (key, value) = list(keys.items())[0]
         del valid_config[section][key]
 
         # with self.assertRaises(eb.ValidationError):
@@ -265,11 +265,11 @@ class EnvironmentBaseTestCase(TestCase):
         controller.load_config()
 
         # Make sure the runtime config and the file saved to disk have the new parameter
-        self.assertEquals(controller.config['new_section']['new_key'], 'value')
+        self.assertEqual(controller.config['new_section']['new_key'], 'value')
 
         with open(res.DEFAULT_CONFIG_FILENAME + res.EXTENSIONS[0], 'r') as f:
             external_config = yaml.load(f)
-            self.assertEquals(external_config['new_section']['new_key'], 'value')
+            self.assertEqual(external_config['new_section']['new_key'], 'value')
 
         # Check extended validation
         # recreate config file without 'new_section' and make sure it fails validation
@@ -365,7 +365,7 @@ class EnvironmentBaseTestCase(TestCase):
             # Verify that the ec2 instance is in the output
             self.assertTrue('ec2instance' in template['Resources'])
 
-            print(json.dumps(template, indent=4))
+            print((json.dumps(template, indent=4)))
 
     @mock_s3
     def test_nat_role_customization(self):

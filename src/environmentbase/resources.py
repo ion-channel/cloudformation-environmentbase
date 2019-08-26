@@ -90,7 +90,7 @@ def load_yaml_file(file_path):
             content = f.read()
             parsed_content = yaml.load(content)
         except ValueError:
-            print('%s could not be parsed' % file_path)
+            print(('%s could not be parsed' % file_path))
             raise
 
     return parsed_content
@@ -107,7 +107,7 @@ def load_json_file(file_path):
             content = f.read()
             parsed_content = json.loads(content)
         except ValueError:
-            print('%s could not be parsed' % file_path)
+            print(('%s could not be parsed' % file_path))
             raise
 
     return parsed_content
@@ -128,8 +128,8 @@ def get_type(typename):
         'int': int,
         'float': float,
         # avoid all the python unicode weirdness by making all the strings basestrings
-        'str': basestring,
-        'basestring': basestring,
+        'str': str,
+        'basestring': str,
         'list': list
     }
     return types.get(typename, None)

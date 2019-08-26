@@ -151,7 +151,7 @@ class RDS(Template):
     # - self.subnets: keyed by type and index (e.g. self.subnets['public'][1])
     def build_hook(self):
 
-        for db_label, db_config in self.config_map.iteritems():
+        for db_label, db_config in self.config_map.items():
 
             (db_instance_type,
              db_name,
@@ -251,16 +251,16 @@ class Controller(NetworkBase):
         # Create the rds instance pattern (includes standard standard parameters)
         my_db = RDS(
             'dbTier',
-            subnet_set=self.template.subnets['private'].keys()[0],
+            subnet_set=list(self.template.subnets['private'].keys())[0],
             config_map=db_config)
 
         # Attach pattern as a child template
         self.add_child_template(my_db)
 
     def deploy_hook(self):
-        for db_label, db_config in self.config['db'].iteritems():
+        for db_label, db_config in self.config['db'].items():
             db_resource_name = db_label.lower() + 'dbTier'.title() + 'RdsMasterUserPassword'
-            print "adding ", db_resource_name
+            print("adding ", db_resource_name)
             self.add_parameter_binding(key=db_resource_name, value=db_config['password'])
 
 

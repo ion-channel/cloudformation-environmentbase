@@ -167,7 +167,7 @@ class HaNat(Template):
         ))
 
         # Create the NAT in a public subnet
-        subnet_layer = self._subnets['public'].keys()[0]
+        subnet_layer = list(self._subnets['public'].keys())[0]
 
         nat_asg = self.add_resource(AutoScalingGroup(
             nat_asg_name,
