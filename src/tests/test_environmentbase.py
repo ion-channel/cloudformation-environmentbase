@@ -142,6 +142,8 @@ class EnvironmentBaseTestCase(TestCase):
         # Create a local config file and verify that it overrides the factory default
         config = self._create_dummy_config()
 
+        print(config)
+
         # Change one of the values
         original_value = config['global']['environment_name']
         config['global']['environment_name'] = original_value + 'dummy'
