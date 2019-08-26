@@ -12,7 +12,6 @@ from environmentbase import cli, resources as res, environmentbase as eb
 from environmentbase import networkbase
 import environmentbase.patterns.ha_nat
 from troposphere import ec2
-from moto import mock_cloudformation
 from moto import mock_s3
 import boto3
 
@@ -404,17 +403,6 @@ class EnvironmentBaseTestCase(TestCase):
         pprint(template)
         self.assertIn('BaseNetwork', template['Resources'])
         self.assertIn('Properties', template['Resources']['BaseNetwork'])
-
-    # Cloudformation doesn't currently support a dry run, so this test would create a live stack
-    # @mock_cloudformation
-    # def test_deploy(self):
-    #     with patch.object(sys, 'argv', [
-    #         'environmentbase',
-    #         'deploy',
-    #         '--debug',
-    #         '--template_file', os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources/amzn_linux_ec2.json')]):
-    #         env_base = eb.EnvironmentBase()
-
 
 if __name__ == '__main__':
     main()

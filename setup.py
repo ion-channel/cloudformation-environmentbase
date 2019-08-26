@@ -64,9 +64,8 @@ setup(
     install_requires=[
         "troposphere==2.3.4",
         "jmespath==0.9.3",
-        "boto==2.48.0",
-        "botocore==1.7.19",
-        "boto3==1.4.7",
+        "botocore==1.12.215",
+        "boto3==1.9.215",
         "ipcalc==1.99.0",
         "docopt==0.6.2",
         "setuptools==36.5.0",
