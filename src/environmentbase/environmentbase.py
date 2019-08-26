@@ -383,12 +383,12 @@ class EnvironmentBase(object):
             # Find all config keys matching the requirement
             matches = list(filter(filter_fun, list(config.keys())))
             if not matches:
-                message = "Config file missing section " + str(path) + ('.' if path is not '' else '') + req_key
+                message = "Config file missing section " + str(path) + ('.' if path != '' else '') + req_key
                 raise ValidationError(message)
 
             # Validate each matching config entry
             for matching_key in matches:
-                new_path = path + ('.' if path is not '' else '') + matching_key
+                new_path = path + ('.' if path != '' else '') + matching_key
 
                 # ------------ value check -----------
                 if isinstance(req_value, str):
@@ -487,7 +487,7 @@ class EnvironmentBase(object):
         > export DB_LABEL2_PASSWORD=myvoiceismyotherpassword12345
         """
         for key, val in config.items():
-            new_path = path + ('.' if path is not '' else '') + key
+            new_path = path + ('.' if path != '' else '') + key
             env_name = '_'.join(new_path.split('.')).upper()
 
             if not isinstance(val, dict):

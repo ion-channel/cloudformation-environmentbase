@@ -637,7 +637,7 @@ class Template(t.Template):
             if root_volume_type:
                 ebs_device.VolumeType = root_volume_type
 
-            ebs_root_mount='sda1'
+            ebs_root_mount = 'sda1'
             if root_volume_mount:
                 ebs_root_mount = root_volume_mount
 
