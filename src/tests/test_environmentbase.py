@@ -53,7 +53,7 @@ class EnvironmentBaseTestCase(TestCase):
         for (section, keys) in config_requirements.items():
             config[section] = {}
             for (key, key_type) in keys.items():
-                if key_type == str.__name__ or key_type == str.__name__:
+                if key_type == 'basestring' or key_type == str.__name__:
                     config[section][key] = dummy_string
                 elif key_type == bool.__name__:
                     config[section][key] = dummy_bool
@@ -61,12 +61,15 @@ class EnvironmentBaseTestCase(TestCase):
                     config[section][key] = dummy_int
                 elif key_type == list.__name__:
                     config[section][key] = dummy_list
+                else:
+                    config[section][key] = ""
 
         config['boto'] = {}
         config['global']['valid_regions'] = ['us-east-1']
         config['boto']['region_name'] = config['global']['valid_regions'][0]
 
         return config
+
 
     def _create_local_file(self, name, content):
         f = open(os.path.join(self.temp_dir, name), 'a')
@@ -124,6 +127,8 @@ class EnvironmentBaseTestCase(TestCase):
             f.write(yaml.dump(res.FACTORY_DEFAULT_CONFIG, default_flow_style=False))
             f.flush()
 
+
+
         fake_cli = self.fake_cli(['create', '--config-file', 'config.yaml'])
         base = eb.EnvironmentBase(fake_cli)
         base.load_config()
@@ -141,8 +146,6 @@ class EnvironmentBaseTestCase(TestCase):
 
         # Create a local config file and verify that it overrides the factory default
         config = self._create_dummy_config()
-
-        print(config)
 
         # Change one of the values
         original_value = config['global']['environment_name']

@@ -111,7 +111,8 @@ class Template(t.Template):
         Private method holds process for hashing this template for future validation.
         """
         m = hashlib.sha256()
-        m.update(self.__validation_formatter())
+        temp = json.dumps(self.__validation_formatter(), sort_keys=True, ensure_ascii=False).encode('utf-8')
+        m.update(temp)
         return m.hexdigest()
 
     def merge(self, other_template):

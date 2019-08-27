@@ -4,7 +4,8 @@
         "environment_name": "environmentbase",
         "monitor_stack": false,
         "write_stack_outputs": false,
-        "stack_outputs_directory": "stack_outputs"
+        "stack_outputs_directory": "stack_outputs",
+        "valid_regions": ["us-east-1"]
     },
     "template": {
         # ami_map_file is not required
