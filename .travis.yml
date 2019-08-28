@@ -1,13 +1,13 @@
 sudo: false
 language: python
 python:
-  - "2.7"
+  - "3.6"
 install:
   - pip install tox-travis
   - wget --quiet https://s3.amazonaws.com/public.ionchannel.io/files/ionize/linux/bin/ionize
   - chmod +x ionize && mkdir -p $HOME/.local/bin && mv ionize $HOME/.local/bin
 script:
-  - tox -e clean,check,py27,report
+  - tox -e clean,check,py36,report
   - pip install coverage
   - coverage report -m |tail -n 1 | grep -o '....$' | sed -e 's/%//' > coverage.txt
   - ionize analyze

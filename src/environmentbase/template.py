@@ -9,8 +9,8 @@ import hashlib
 import json
 import os
 from datetime import datetime
-import resources as res
-import utility
+from . import resources as res
+from . import utility
 
 from toolz.dicttoolz import merge
 
@@ -75,7 +75,7 @@ class Template(t.Template):
 
         elif isinstance(item, dict):
             items = {}
-            for (k, v) in item.iteritems():
+            for (k, v) in item.items():
                 items.update({k: self._ref_maybe(v)})
             return items
 
@@ -111,7 +111,8 @@ class Template(t.Template):
         Private method holds process for hashing this template for future validation.
         """
         m = hashlib.sha256()
-        m.update(self.__validation_formatter())
+        temp = json.dumps(self.__validation_formatter(), sort_keys=True, ensure_ascii=False).encode('utf-8')
+        m.update(temp)
         return m.hexdigest()
 
     def merge(self, other_template):
@@ -289,7 +290,7 @@ class Template(t.Template):
         self.add_common_parameters(ec2_key, parent_subnets)
 
     def _merge_region_map(self, map1, map2):
-        for key in set(map1.keys() + map2.keys()):
+        for key in set(list(map1.keys()) + list(map2.keys())):
             yield (key, merge(map1[key], map2[key]))
 
     def add_common_parameters(self, ec2_key, parent_subnets):
@@ -381,8 +382,8 @@ class Template(t.Template):
         # If the variable value is not a string, use the Join function
         # This handles Refs, Parameters, etc. which are evaluated at runtime
         variable_declarations = []
-        for k, v in env_vars.iteritems():
-            if isinstance(v, basestring):
+        for k, v in env_vars.items():
+            if isinstance(v, str):
                 variable_declarations.append('%s=%s' % (k, v))
             else:
                 variable_declarations.append(Join('=', [k, v]))
@@ -603,9 +604,9 @@ class Template(t.Template):
         # If subnet_layer isn't passed in, try a private subnet if available, else a public subnet
         if not subnet_layer:
             if len(self._subnets.get('private')) > 0:
-                subnet_layer = self._subnets['private'].keys()[0]
+                subnet_layer = list(self._subnets['private'].keys())[0]
             else:
-                subnet_layer = self._subnets['public'].keys()[0]
+                subnet_layer = list(self._subnets['public'].keys())[0]
 
         subnet_type = self.get_subnet_type(subnet_layer)
 
@@ -637,7 +638,7 @@ class Template(t.Template):
             if root_volume_type:
                 ebs_device.VolumeType = root_volume_type
 
-            ebs_root_mount='sda1'
+            ebs_root_mount = 'sda1'
             if root_volume_mount:
                 ebs_root_mount = root_volume_mount
 
@@ -728,7 +729,7 @@ class Template(t.Template):
         if custom_tags is not None and len(custom_tags) > 0:
             final_custom_tags = []
             if type(custom_tags) == dict:
-                for key, value in custom_tags.iteritems():
+                for key, value in custom_tags.items():
                     final_custom_tags.append(autoscaling.Tag(key, value, True))
             elif type(custom_tags) != list:
                 final_custom_tags = [custom_tags]
@@ -799,7 +800,7 @@ class Template(t.Template):
             # If subnet layer is not passed in, determine based on the scheme
             # -- Pick a public subnet if it's internet-facing, else pick a private one
             subnet_type = 'public' if scheme == 'internet-facing' else 'private'
-            subnet_layer = self._subnets[subnet_type].keys()[0]
+            subnet_layer = list(self._subnets[subnet_type].keys())[0]
 
         # Add optional parameters for LoadBalancer to this dictionary
         optional_elb_kwargs = {}
@@ -951,9 +952,9 @@ class Template(t.Template):
         """
         if to_port is None:
             to_port = from_port
-        if isinstance(from_port, unicode):
+        if isinstance(from_port, str):
             from_port = from_port.encode('ascii', 'ignore')
-        if isinstance(to_port, unicode):
+        if isinstance(to_port, str):
             to_port = to_port.encode('ascii', 'ignore')
         if from_port == to_port:
             label_suffix = ip_protocol.capitalize() + str(from_port)
@@ -1310,7 +1311,7 @@ class Template(t.Template):
         """
         stack_params = {}
 
-        for parameter in child_template.parameters.keys():
+        for parameter in list(child_template.parameters.keys()):
 
             # Manual parameter bindings single-namespace
             if parameter in self.manual_parameter_bindings:
@@ -1318,12 +1319,12 @@ class Template(t.Template):
                 stack_params[parameter] = manual_match
 
             # Match any child stack parameters that have the same name as this stacks **parameters**
-            elif parameter in self.parameters.keys():
+            elif parameter in list(self.parameters.keys()):
                 param_match = self.parameters.get(parameter)
                 stack_params[parameter] = Ref(param_match)
 
             # Match any child stack parameters that have the same name as this stacks **resources**
-            elif parameter in self.resources.keys():
+            elif parameter in list(self.resources.keys()):
                 resource_match = self.resources.get(parameter)
                 stack_params[parameter] = Ref(resource_match)
 

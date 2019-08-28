@@ -1,6 +1,6 @@
 from troposphere import Ref, FindInMap, Output, GetAZs, Select
 import troposphere.ec2 as ec2
-import ha_nat
+from . import ha_nat
 import netaddr
 from toolz import groupby, assoc
 
@@ -311,16 +311,16 @@ class BaseNetwork(Template):
 
             for subnet_config in subnet_configs:
                 try:
-                    cidr = newcidrs.next()
+                    cidr = next(newcidrs)
                 except StopIteration:
                     # net = chain(*reversed(available_cidrs)).next()
                     newcidrs = net.subnet(int(subnet_size))
-                    cidr = newcidrs.next()
+                    cidr = next(newcidrs)
 
                 new_config = assoc(subnet_config, 'cidr', str(cidr))
                 yield new_config
             else:
-                net = newcidrs.next()
+                net = next(newcidrs)
                 available_cidrs.append(newcidrs)
 
     def add_network_cidr_mapping(self,

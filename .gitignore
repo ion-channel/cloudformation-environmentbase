@@ -17,3 +17,4 @@ config.*
 .eggs
 .coverage*
 .tox
+/ion-channel

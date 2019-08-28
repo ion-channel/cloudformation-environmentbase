@@ -1,7 +1,7 @@
 from troposphere import GetAtt
-from environmentbase import EnvironmentBase
+from .environmentbase import EnvironmentBase
 
-from patterns.base_network import BaseNetwork
+from .patterns.base_network import BaseNetwork
 
 
 class NetworkBase(EnvironmentBase):

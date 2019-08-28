@@ -415,16 +415,16 @@ for aws_region in regions:
 
 logging.info('Bucket created for CloudTrail logs in ' + arguments.get('--bucket_region', 'us-west-2') + ' with name of ' + output_variables.get('bucketName', ''))
 
-print ''
-print ''
-print ''
-print ''
+print('')
+print('')
+print('')
+print('')
 logging.info('### Process Complete ###')
 if arguments.get('--third_parth_auth_ids', False):
     logging.info('    Provide the following JSON document to the team managing federated auth for provisioning:')
-    print ''
-    print json.dumps(output_variables)
-print ''
-print ''
-print ''
-print ''
+    print('')
+    print(json.dumps(output_variables))
+print('')
+print('')
+print('')
+print('')

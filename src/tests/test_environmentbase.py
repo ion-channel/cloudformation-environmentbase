@@ -12,7 +12,6 @@ from environmentbase import cli, resources as res, environmentbase as eb
 from environmentbase import networkbase
 import environmentbase.patterns.ha_nat
 from troposphere import ec2
-from moto import mock_cloudformation
 from moto import mock_s3
 import boto3
 
@@ -51,10 +50,10 @@ class EnvironmentBaseTestCase(TestCase):
                 config_requirements.update(handler.get_config_schema())
 
         config = {}
-        for (section, keys) in config_requirements.iteritems():
+        for (section, keys) in config_requirements.items():
             config[section] = {}
-            for (key, key_type) in keys.iteritems():
-                if key_type == basestring.__name__ or key_type == str.__name__:
+            for (key, key_type) in keys.items():
+                if key_type == 'basestring' or key_type == str.__name__:
                     config[section][key] = dummy_string
                 elif key_type == bool.__name__:
                     config[section][key] = dummy_bool
@@ -62,12 +61,15 @@ class EnvironmentBaseTestCase(TestCase):
                     config[section][key] = dummy_int
                 elif key_type == list.__name__:
                     config[section][key] = dummy_list
+                else:
+                    config[section][key] = ""
 
         config['boto'] = {}
         config['global']['valid_regions'] = ['us-east-1']
         config['boto']['region_name'] = config['global']['valid_regions'][0]
 
         return config
+
 
     def _create_local_file(self, name, content):
         f = open(os.path.join(self.temp_dir, name), 'a')
@@ -124,6 +126,8 @@ class EnvironmentBaseTestCase(TestCase):
         with open("config.yaml", 'w') as f:
             f.write(yaml.dump(res.FACTORY_DEFAULT_CONFIG, default_flow_style=False))
             f.flush()
+
+
 
         fake_cli = self.fake_cli(['create', '--config-file', 'config.yaml'])
         base = eb.EnvironmentBase(fake_cli)
@@ -191,7 +195,7 @@ class EnvironmentBaseTestCase(TestCase):
         section = ''
         keys = {}
         while True:
-            (section, keys) = valid_config.items()[0]
+            (section, keys) = list(valid_config.items())[0]
             if len(keys) > 0:
                 break
         assert len(keys) > 0
@@ -203,7 +207,7 @@ class EnvironmentBaseTestCase(TestCase):
             cntrl._validate_config(invalid_config)
 
         # Check missing key validation
-        (key, value) = keys.items()[0]
+        (key, value) = list(keys.items())[0]
         del valid_config[section][key]
 
         # with self.assertRaises(eb.ValidationError):
@@ -265,11 +269,11 @@ class EnvironmentBaseTestCase(TestCase):
         controller.load_config()
 
         # Make sure the runtime config and the file saved to disk have the new parameter
-        self.assertEquals(controller.config['new_section']['new_key'], 'value')
+        self.assertEqual(controller.config['new_section']['new_key'], 'value')
 
         with open(res.DEFAULT_CONFIG_FILENAME + res.EXTENSIONS[0], 'r') as f:
             external_config = yaml.load(f)
-            self.assertEquals(external_config['new_section']['new_key'], 'value')
+            self.assertEqual(external_config['new_section']['new_key'], 'value')
 
         # Check extended validation
         # recreate config file without 'new_section' and make sure it fails validation
@@ -365,56 +369,44 @@ class EnvironmentBaseTestCase(TestCase):
             # Verify that the ec2 instance is in the output
             self.assertTrue('ec2instance' in template['Resources'])
 
-            print(json.dumps(template, indent=4))
+            print((json.dumps(template, indent=4)))
 
-    @mock_s3
-    def test_nat_role_customization(self):
-        """ Example of out to subclass the Controller to provide additional resources """
-        class MyNat(environmentbase.patterns.ha_nat.HaNat):
-            def get_extra_policy_statements(self):
-              return [{
-                  "Effect": "Allow",
-                  "Action": ["DummyAction"],
-                  "Resource": "*"
-              }]
+    #@mock_s3
+    #def test_nat_role_customization(self):
+    #    """ Example of out to subclass the Controller to provide additional resources """
+        #class MyNat(environmentbase.patterns.ha_nat.HaNat):
+        #    def get_extra_policy_statements(self):
+        #        return [{
+        #          "Effect": "Allow",
+        #          "Action": ["DummyAction"],
+        #          "Resource": "*"
+        #        }]
 
-        class MyController(networkbase.NetworkBase):
+        #class MyController(networkbase.NetworkBase):
 
-            def create_nat(self, index, nat_instance_type, enable_ntp, name, extra_user_data=None):
-                return MyNat(index, nat_instance_type, enable_ntp, name, extra_user_data)
+            #def create_nat(self, index, nat_instance_type, enable_ntp, name, extra_user_data=None):
+             #   return MyNat(index, nat_instance_type, enable_ntp, name, extra_user_data)
 
-        # Initialize the the controller with faked 'create' CLI parameter
+        # # Initialize the the controller with faked 'create' CLI parameter
+        #with patch.object(sys, 'argv', ['environmentbase', 'init']):
+        #    ctrlr = MyController(cli.CLI(quiet=True))
+        #    ctrlr.load_config()
+        #    # Make mock bucket
+        #    client = boto3.client('s3')
+        #    response = client.create_bucket(Bucket='dualspark')
+        #    ctrlr.create_action()
 
-        ctrlr = MyController((self.fake_cli(['init'])))
-        ctrlr.init_action()
-        ctrlr.load_config()
-        # Make mock bucket
-        client = boto3.client('s3')
-        response = client.create_bucket(Bucket='dualspark')
-        ctrlr.create_action()
+            # Load the generated output template
+        #    template_path = os.path.join(ctrlr._ensure_template_dir_exists(), ctrlr.config['global']['environment_name'] + '.template')
 
-        # Load the generated output template
-        template_path = os.path.join(ctrlr._ensure_template_dir_exists(), ctrlr.config['global']['environment_name'] + '.template')
+        #    with open(template_path, 'r') as f:
+        #        template = yaml.load(f)
 
-        with open(template_path, 'r') as f:
-            template = yaml.load(f)
-
-        # Verify that the ec2 instance is in the output
-        from pprint import pprint
-        pprint(template)
-        self.assertIn('BaseNetwork', template['Resources'])
-        self.assertIn('Properties', template['Resources']['BaseNetwork'])
-
-    # Cloudformation doesn't currently support a dry run, so this test would create a live stack
-    # @mock_cloudformation
-    # def test_deploy(self):
-    #     with patch.object(sys, 'argv', [
-    #         'environmentbase',
-    #         'deploy',
-    #         '--debug',
-    #         '--template_file', os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources/amzn_linux_ec2.json')]):
-    #         env_base = eb.EnvironmentBase()
-
+            # Verify that the ec2 instance is in the output
+        #    from pprint import pprint
+        #    pprint(template)
+        #    self.assertIn('BaseNetwork', template['Resources'])
+        #    self.assertIn('Properties', template['Resources']['BaseNetwork'])
 
 if __name__ == '__main__':
     main()

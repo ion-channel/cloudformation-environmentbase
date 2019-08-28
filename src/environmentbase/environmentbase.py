@@ -4,12 +4,12 @@ import copy
 import botocore.exceptions
 from boto import cloudformation, sts
 from troposphere import Parameter
-from template import Template
-import cli
-import resources as res
+from .template import Template
+from . import cli
+from . import resources as res
 from fnmatch import fnmatch
-import utility
-import monitor
+from . import utility
+from . import monitor
 import json
 
 TIMEOUT = 60
@@ -189,12 +189,12 @@ class EnvironmentBase(object):
             reloaded_template = json.loads(raw_json)
             output_file.write(json.dumps(reloaded_template, indent=4, separators=(',', ':')))
 
-        print("Generated {} template".format(template.name))
+        print(("Generated {} template".format(template.name)))
 
         if s3_upload:
-            print("S3:\t{}".format(utility.get_template_s3_url(Template.template_bucket_default, template.resource_path)))
+            print(("S3:\t{}".format(utility.get_template_s3_url(Template.template_bucket_default, template.resource_path))))
 
-        print("Local:\t{}\n".format(template.resource_path))
+        print(("Local:\t{}\n".format(template.resource_path)))
 
     def serialize_templates(self):
         s3_client = utility.get_boto_resource(self.config, 's3')
@@ -278,7 +278,7 @@ class EnvironmentBase(object):
                 NotificationARNs=notification_arns,
                 Capabilities=['CAPABILITY_IAM'])
             is_successful = True
-            print("\nSuccessfully issued update stack command for %s\n" % stack_name)
+            print(("\nSuccessfully issued update stack command for %s\n" % stack_name))
 
         # Else stack doesn't currently exist, create a new stack
         except botocore.exceptions.ClientError as update_e:
@@ -293,9 +293,9 @@ class EnvironmentBase(object):
                         DisableRollback=True,
                         TimeoutInMinutes=TIMEOUT)
                     is_successful = True
-                    print("\nSuccessfully issued create stack command for %s\n" % stack_name)
+                    print(("\nSuccessfully issued create stack command for %s\n" % stack_name))
                 except botocore.exceptions.ClientError as create_e:
-                    print("Deploy failed: \n\n%s\n" % create_e.message)
+                    print(("Deploy failed: \n\n%s\n" % create_e.message))
             else:
                 raise
 
@@ -370,28 +370,28 @@ class EnvironmentBase(object):
         stack_name = self.config['global']['environment_name']
 
         cfn_conn.delete_stack(StackName=stack_name)
-        print("\nSuccessfully issued delete stack command for %s\n" % stack_name)
+        print(("\nSuccessfully issued delete stack command for %s\n" % stack_name))
 
     def _validate_config_helper(self, schema, config, path):
         # Check each requirement
-        for (req_key, req_value) in schema.iteritems():
+        for (req_key, req_value) in schema.items():
 
             # Check for key match, usually only one match but parametrized keys can have multiple matches
             # Uses 'filename' match, similar to regex but only supports '?', '*', [XYZ], [!XYZ]
             filter_fun = lambda candidate_key: fnmatch(candidate_key, req_key)
 
             # Find all config keys matching the requirement
-            matches = filter(filter_fun, config.keys())
+            matches = list(filter(filter_fun, list(config.keys())))
             if not matches:
-                message = "Config file missing section " + str(path) + ('.' if path is not '' else '') + req_key
+                message = "Config file missing section " + str(path) + ('.' if path != '' else '') + req_key
                 raise ValidationError(message)
 
             # Validate each matching config entry
             for matching_key in matches:
-                new_path = path + ('.' if path is not '' else '') + matching_key
+                new_path = path + ('.' if path != '' else '') + matching_key
 
                 # ------------ value check -----------
-                if isinstance(req_value, basestring):
+                if isinstance(req_value, str):
                     req_type = res.get_type(req_value)
 
                     if not isinstance(config[matching_key], req_type):
@@ -486,14 +486,14 @@ class EnvironmentBase(object):
         > export DB_LABEL1_PASSWORD=myvoiceismypassword12345
         > export DB_LABEL2_PASSWORD=myvoiceismyotherpassword12345
         """
-        for key, val in config.iteritems():
-            new_path = path + ('.' if path is not '' else '') + key
+        for key, val in config.items():
+            new_path = path + ('.' if path != '' else '') + key
             env_name = '_'.join(new_path.split('.')).upper()
 
             if not isinstance(val, dict):
                 env_value = os.environ.get(env_name)
                 if print_debug:
-                    print("Checking %s (%s)" % (env_name, new_path))
+                    print(("Checking %s (%s)" % (env_name, new_path)))
 
                 if env_value is None:
                     continue
@@ -510,7 +510,7 @@ class EnvironmentBase(object):
                 config[key] = env_value if env_value is not None else default_value
 
                 if env_value is not None:
-                    print("* Updating %s from '%s' to value of '%s'" % (new_path, default_value, env_name))
+                    print(("* Updating %s from '%s' to value of '%s'" % (new_path, default_value, env_name)))
 
             else:
                 EnvironmentBase._config_env_override(config[key], new_path, print_debug=print_debug)
@@ -523,8 +523,8 @@ class EnvironmentBase(object):
         """
 
         if os.path.isfile(self.config_filename):
-            overwrite = raw_input("%s already exists. Overwrite? (y/n) " % self.config_filename).lower()
-            print
+            overwrite = input("%s already exists. Overwrite? (y/n) " % self.config_filename).lower()
+            print()
             if not overwrite == 'y':
                 return
 
@@ -536,7 +536,7 @@ class EnvironmentBase(object):
 
         with open(self.config_filename, 'w') as f:
             f.write(json.dumps(config, indent=4, sort_keys=True, separators=(',', ': ')))
-            print('Generated config file at %s\n' % self.config_filename)
+            print(('Generated config file at %s\n' % self.config_filename))
 
     def load_config(self, view=None, config=None):
         """
@@ -582,7 +582,7 @@ class EnvironmentBase(object):
         """
         Create new Template instance, set description and common parameters and load AMI cache.
         """
-        print('\nGenerating templates for {} stack\n'.format(self.globals['environment_name']))
+        print(('\nGenerating templates for {} stack\n'.format(self.globals['environment_name'])))
 
         # Configure Template class with S3 settings from config
         Template.template_bucket_default = self.template_args.get('s3_bucket')
@@ -632,14 +632,14 @@ class EnvironmentBase(object):
         ami_cache_filename = res.DEFAULT_AMI_CACHE_FILENAME + res.EXTENSIONS[0]
 
         if os.path.isfile(ami_cache_filename):
-            overwrite = raw_input("%s already exists. Overwrite? (y/n) " % ami_cache_filename).lower()
-            print
+            overwrite = input("%s already exists. Overwrite? (y/n) " % ami_cache_filename).lower()
+            print()
             if not overwrite == 'y':
                 return
 
         with open(ami_cache_filename, 'w') as f:
             f.write(json.dumps(res.FACTORY_DEFAULT_AMI_CACHE, indent=4, separators=(',', ': ')))
-            print("Generated AMI cache file at %s\n" % ami_cache_filename)
+            print(("Generated AMI cache file at %s\n" % ami_cache_filename))
 
     def to_json(self):
         """
@@ -704,7 +704,7 @@ class EnvironmentBase(object):
             output_file.write(json.dumps(stack_outputs, indent=4, separators=(',', ':')))
 
         if self.globals['print_debug']:
-            print("Outputs for {0} written to {1}\n".format(stack_name, stack_output_filename))
+            print(("Outputs for {0} written to {1}\n".format(stack_name, stack_output_filename)))
 
     def get_stack_output(self, stack_id, output_name):
         """

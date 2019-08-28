@@ -1,6 +1,6 @@
 __author__ = 'Eric Price'
 
-from urllib2 import urlopen
+from urllib.request import urlopen
 from lxml.html import fromstring
 import json
 
@@ -71,4 +71,4 @@ if __name__ == '__main__':
     import re
     for _ in range(7):
         json_str = re.sub(r": \{\n\s*([^\n]+)\n\s*\}", r": { \1 }", json_str, re.MULTILINE)
-    print json_str
+    print(json_str)

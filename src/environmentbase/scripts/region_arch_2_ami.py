@@ -36,7 +36,7 @@ def get_region_list():
     if return_code != 200:
         raise Exception('describe_regions returned %s' % return_code)
     else:
-        return map(lambda entry: entry['RegionName'], response['Regions'])
+        return [entry['RegionName'] for entry in response['Regions']]
 
 
 def find_amis(region='us-west-2', year=YEAR):
@@ -62,18 +62,18 @@ def find_amis(region='us-west-2', year=YEAR):
 def filter_amis(ami_list, remove_rcs=True, use_nat_instances=False, remove_minimal=True):
     #  Remove release candidates
     if remove_rcs:
-        ami_list = filter(lambda ami: RC_REGEX.search(ami['Name']) is None, ami_list)
+        ami_list = [ami for ami in ami_list if RC_REGEX.search(ami['Name']) is None]
 
     # Looking for NAT instances?
     if use_nat_instances:
         nat_filter_fun = lambda ami: NAT_REGEX.search(ami['Name']) is not None
     else:
         nat_filter_fun = lambda ami: NAT_REGEX.search(ami['Name']) is None
-    ami_list = filter(nat_filter_fun, ami_list)
+    ami_list = list(filter(nat_filter_fun, ami_list))
 
     # Filter out 'minimal' instance types
     if remove_minimal:
-        ami_list = filter(lambda ami: MINIMAL_REGEX.search(ami['Name']) is None, ami_list)
+        ami_list = [ami for ami in ami_list if MINIMAL_REGEX.search(ami['Name']) is None]
 
     if len(ami_list) == 0:
         return None
@@ -86,22 +86,22 @@ def filter_amis(ami_list, remove_rcs=True, use_nat_instances=False, remove_minim
 def get_hvm_ami(filtered_amis, vol_type=VOL_TYPE_SSD):
     filter_fun = lambda ami: ami['VirtualizationType'] == VIRT_TYPE_HVM and \
         ami['BlockDeviceMappings'][0]['Ebs']['VolumeType'] == vol_type
-    return filter(filter_fun, filtered_amis)[0]
+    return list(filter(filter_fun, filtered_amis))[0]
 
 
 def get_pv_ami(filtered_amis):
     filter_fun = lambda ami: ami['VirtualizationType'] == VIRT_TYPE_PV and \
         ami['BlockDeviceMappings'][0]['Ebs']['VolumeType'] == VOL_TYPE_MAG
-    return filter(filter_fun, filtered_amis)[0]
+    return list(filter(filter_fun, filtered_amis))[0]
 
 
 if __name__ == '__main__':
     region_mapping = {}
     regions = get_region_list()
 
-    print 'Regions %s' % regions
+    print('Regions %s' % regions)
     for region in regions:
-        print '\n-------------------\nProcessing %s' % region
+        print('\n-------------------\nProcessing %s' % region)
         images = find_amis(region, YEAR)
         filtered_amis = filter_amis(images)
 
@@ -111,10 +111,10 @@ if __name__ == '__main__':
             filtered_amis = filter_amis(images)
 
         hvm_ami = get_hvm_ami(filtered_amis)
-        print json.dumps(hvm_ami, indent=4, separators=(',', ': '))
+        print(json.dumps(hvm_ami, indent=4, separators=(',', ': ')))
 
         pv_ami = get_pv_ami(filtered_amis)
-        print json.dumps(pv_ami, indent=4, separators=(',', ': '))
+        print(json.dumps(pv_ami, indent=4, separators=(',', ': ')))
 
         region_mapping[region] = {'PV64': pv_ami["ImageId"], 'HVM64': hvm_ami["ImageId"]}
 
@@ -125,5 +125,5 @@ if __name__ == '__main__':
     for _ in range(7):
         json_str = re.sub(r": \{\n\s*([^\n]+),\n\s*([^\n]+)\n\s*\}", r": { \1, \2 }", json_str, re.MULTILINE)
 
-    print '\n========================'
-    print json_str
+    print('\n========================')
+    print(json_str)

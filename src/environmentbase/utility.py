@@ -6,7 +6,7 @@ import time
 import troposphere as t
 import tempfile
 import os
-import resources as res
+from . import resources as res
 
 
 def random_string(size=5):
