@@ -62,7 +62,7 @@ setup(
     package_dir={"": "src"},
 
     install_requires=[
-        "troposphere==2.3.4",
+        "troposphere==2.5.1",
         "jmespath==0.9.3",
         "botocore==1.12.215",
         "boto3==1.9.215",
@@ -71,7 +71,7 @@ setup(
         "setuptools==36.5.0",
         "awacs==0.7.1",
         "commentjson==0.6",
-        "PyYAML==3.13",
+        "PyYAML==5.1",
         "netaddr==0.7.19",
         "toolz==0.8.2",
         'pbr==3.1.1'
